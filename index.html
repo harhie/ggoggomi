@@ -2,35 +2,58 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GGomi 가계부</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+      .font-pretendard { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-100 p-5 font-sans">
+<body class="font-pretendard p-5">
     <div class="max-w-md mx-auto">
-        <header class="flex justify-between items-center mb-10">
-            <h1 class="text-5xl font-black text-indigo-600">GGomi</h1>
-            <button onclick="document.getElementById('m').style.display='flex'" class="bg-indigo-600 text-white w-16 h-16 rounded-full text-4xl shadow-xl active:scale-95">+</button>
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-4xl font-black text-indigo-600 tracking-tight">GGomi</h1>
+            <button onclick="document.getElementById('m').style.display='flex'" class="bg-indigo-600 text-white w-14 h-14 rounded-full text-3xl shadow-lg active:scale-95 transition-all">+</button>
         </header>
 
-        <div id="list" class="space-y-4">
-            <div class="text-center py-20 text-gray-400 font-bold">내역을 불러오는 중...</div>
+        <div class="bg-indigo-600 rounded-3xl p-6 mb-6 text-white shadow-xl shadow-indigo-100">
+            <p class="text-indigo-200 text-sm font-bold mb-1">조회 기간 합계</p>
+            <h2 id="totalAmount" class="text-4xl font-black">0원</h2>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm mb-6 flex gap-3 items-end border border-gray-100">
+            <div class="flex-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">시작</label>
+                <input type="date" id="sDate" class="w-full text-sm font-bold outline-none">
+            </div>
+            <div class="flex-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">종료</label>
+                <input type="date" id="eDate" class="w-full text-sm font-bold outline-none">
+            </div>
+            <button onclick="load()" class="bg-gray-900 text-white px-5 py-2 rounded-xl text-sm font-bold active:scale-95">조회</button>
+        </div>
+
+        <div id="list" class="space-y-3">
+            <p class="text-center py-20 text-gray-400">내역을 가져오고 있습니다...</p>
         </div>
     </div>
 
-    <div id="m" style="display:none;" class="fixed inset-0 bg-white z-50 flex-col p-8">
+    <div id="m" style="display:none;" class="fixed inset-0 bg-white z-50 flex-col p-8 overflow-y-auto">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-3xl font-bold">기록하기</h2>
-            <button onclick="document.getElementById('m').style.display='none'" class="text-5xl text-gray-300">&times;</button>
+            <h2 class="text-3xl font-black">기록하기</h2>
+            <button onclick="document.getElementById('m').style.display='none'" class="text-5xl text-gray-200">&times;</button>
         </div>
-        <div class="space-y-6">
-            <input type="date" id="d" class="w-full border-b-4 p-4 text-2xl outline-none">
-            <select id="c" class="w-full border-b-4 p-4 text-2xl outline-none">
-                <option>현금</option><option>코인</option><option>아버지</option><option>기타</option>
-            </select>
-            <input type="text" id="i" placeholder="항목" class="w-full border-b-4 p-4 text-2xl outline-none">
-            <input type="number" id="a" placeholder="금액" class="w-full border-b-4 p-4 text-2xl outline-none">
-            <button onclick="save()" id="s" class="w-full bg-indigo-600 text-white p-6 rounded-3xl text-3xl font-bold">저장하기</button>
+        <div class="space-y-8">
+            <div><label class="text-sm font-bold text-gray-400">날짜</label>
+            <input type="date" id="d" class="w-full border-b-4 border-gray-50 p-3 text-2xl outline-none focus:border-indigo-600"></div>
+            <div><label class="text-sm font-bold text-gray-400">구분</label>
+            <select id="c" class="w-full border-b-4 border-gray-50 p-3 text-2xl outline-none"></select></div>
+            <div><label class="text-sm font-bold text-gray-400">항목</label>
+            <input type="text" id="i" placeholder="항목 입력" class="w-full border-b-4 border-gray-50 p-3 text-2xl outline-none"></div>
+            <div><label class="text-sm font-bold text-gray-400">금액</label>
+            <input type="number" id="a" placeholder="0" class="w-full border-b-4 border-gray-50 p-3 text-2xl outline-none"></div>
+            <button onclick="save()" id="s" class="w-full bg-indigo-600 text-white p-6 rounded-3xl text-2xl font-black shadow-2xl active:scale-95">저장하기</button>
         </div>
     </div>
 
@@ -38,35 +61,58 @@
         const URL = "https://script.google.com/macros/s/AKfycbzkMqum-tUIwWskpPoaZzrelSaRRhJL_GqNY8iKm9BPSaq_MhPoSE8P0IvohfEI1-wOmw/exec";
 
         async function load() {
+            const s = document.getElementById('sDate').value;
+            const e = document.getElementById('eDate').value;
+            const list = document.getElementById('list');
+            const totalDisplay = document.getElementById('totalAmount');
+            
             try {
-                const r = await fetch(URL);
+                // 카테고리 로드
+                if(!document.getElementById('c').innerHTML) {
+                    const cRes = await fetch(URL + "?action=getCat");
+                    const cats = await cRes.json();
+                    document.getElementById('c').innerHTML = cats.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+                }
+
+                // 데이터 로드
+                const r = await fetch(`${URL}?start=${s}&end=${e}`);
                 const data = await r.json();
-                document.getElementById('list').innerHTML = data.length ? data.map(row => `
-                    <div class="bg-white p-6 rounded-3xl shadow-sm flex justify-between items-center">
-                        <div><div class="text-2xl font-bold">${row[2]}</div><div class="text-sm text-gray-400">${row[1]} | ${new Date(row[0]).toLocaleDateString().slice(5)}</div></div>
-                        <div class="text-2xl font-black text-indigo-600">${Number(row[3]).toLocaleString()}원</div>
+                
+                // 합계 계산
+                const sum = data.reduce((acc, row) => acc + Number(row[3]), 0);
+                totalDisplay.innerText = sum.toLocaleString() + '원';
+
+                list.innerHTML = data.length ? data.map(row => `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-50 flex justify-between items-center">
+                        <div>
+                            <div class="text-xl font-bold text-gray-800">${row[2]}</div>
+                            <div class="text-[11px] text-gray-400 font-bold">${row[1]} | ${new Date(row[0]).toLocaleDateString().slice(2)}</div>
+                        </div>
+                        <div class="text-xl font-black text-indigo-600">${Number(row[3]).toLocaleString()}원</div>
                     </div>
-                `).join('') : '<p class="text-center py-20 text-gray-400">내역이 없습니다.</p>';
-            } catch(e) {
-                document.getElementById('list').innerHTML = '<div class="p-10 bg-red-50 text-red-500 rounded-3xl text-center">연결 실패! URL을 확인하세요.</div>';
+                `).join('') : '<p class="text-center py-20 text-gray-300 font-bold">내역이 없습니다.</p>';
+            } catch(err) {
+                list.innerHTML = '<div class="p-10 text-center text-red-400 font-bold">연결 실패</div>';
             }
         }
 
         async function save() {
             const btn = document.getElementById('s');
+            const item = document.getElementById('i').value;
+            const amount = document.getElementById('a').value;
+            if(!item || !amount) return alert("항목과 금액을 입력하세요");
+
             btn.innerText = "저장 중...";
-            const body = {
-                category: document.getElementById('c').value,
-                item: document.getElementById('i').value,
-                amount: document.getElementById('a').value,
-                date: document.getElementById('d').value
-            };
+            btn.disabled = true;
+            const body = { category: document.getElementById('c').value, item: item, amount: amount, date: document.getElementById('d').value };
             await fetch(URL, { method: 'POST', body: JSON.stringify(body) });
             location.reload();
         }
 
-        document.getElementById('d').valueAsDate = new Date();
-        load();
+        window.onload = () => {
+          document.getElementById('d').valueAsDate = new Date();
+          load();
+        };
     </script>
 </body>
 </html>
