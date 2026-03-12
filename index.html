@@ -18,18 +18,15 @@
         
         .card-container { position: relative; margin-bottom: 25px; padding: 5px; }
         .btn-group { position: absolute; right: 10px; top: 15px; bottom: 15px; display: flex; gap: 10px; z-index: 0; opacity: 0; transition: 0.2s; }
-        .action-btn { width: 75px; height: 100%; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .action-btn { width: 75px; height: 100%; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: white; }
         .edit-btn { background: var(--main); }
         .del-btn { background: #ef4444; }
         
-        /* 슬라이드 거리 대폭 확장 (180px) */
         .card-container.open .neu-card { transform: translateX(-180px); box-shadow: none; }
         .card-container.open .btn-group { opacity: 1; }
 
         select, input { background: transparent; outline: none; border: none; width: 100%; }
         select { appearance: none; padding-left: 15px !important; }
-        .loading-text { font-size: 11px; color: #ef4444; font-weight: bold; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body class="p-6">
@@ -52,7 +49,10 @@
                 <div class="border-b border-gray-200 pb-1"><label class="text-[10px] font-bold text-gray-400 uppercase">시작일</label><input type="date" id="startDate" class="text-sm font-bold text-gray-800"></div>
                 <div class="border-b border-gray-200 pb-1"><label class="text-[10px] font-bold text-gray-400 uppercase">종료일</label><input type="date" id="endDate" class="text-sm font-bold text-gray-800"></div>
             </div>
-            <div class="flex gap-3"><div class="flex-1 bg-gray-100/50 rounded-2xl overflow-hidden"><select id="sCat" class="p-4 text-sm font-bold text-gray-800"></select></div><button onclick="loadData()" class="neu-btn px-6 py-4 text-sm font-bold">조회</button></div>
+            <div class="flex gap-3">
+                <div class="flex-1 bg-gray-100/50 rounded-2xl overflow-hidden"><select id="sCat" class="p-4 text-sm font-bold text-gray-800"></select></div>
+                <button onclick="loadData()" class="neu-btn px-6 py-4 text-sm font-bold">조회</button>
+            </div>
         </div>
         <div id="list" class="space-y-1"></div>
     </div>
@@ -64,17 +64,18 @@
         </div>
         <div class="space-y-6">
             <input type="hidden" id="editRowIdx">
-            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">날짜</label><input type="date" id="inDate" onchange="getPriceFromServer()" class="w-full text-xl font-bold text-gray-800"></div>
-            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">구분</label><select id="inCat" onchange="getPriceFromServer()" class="text-xl font-bold text-gray-800 px-2"></select></div>
+            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">날짜</label><input type="date" id="inDate" class="w-full text-xl font-bold text-gray-800"></div>
+            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">구분</label><select id="inCat" onchange="toggleQty()" class="text-xl font-bold text-gray-800 px-2"></select></div>
             
-            <div id="qtyBox" class="neu-card p-5 opacity-40">
-                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">수량 (개수)</label>
-                <input type="number" id="inQty" step="any" inputmode="decimal" oninput="calcTotal()" placeholder="0.00" class="w-full text-xl font-bold text-gray-800">
-            </div>
             <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="w-full text-xl font-bold text-gray-800"></div>
+
+            <div id="qtyBox" class="hidden neu-card p-5">
+                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">수량 (개수)</label>
+                <input type="number" id="inQty" step="any" inputmode="decimal" placeholder="0.00" class="w-full text-xl font-bold text-gray-800">
+            </div>
             
             <div class="neu-card p-5">
-                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW) <span id="coinLoading" class="hidden loading-text ml-2">서버 시세 조회 중...</span></label>
+                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW)</label>
                 <input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="w-full text-xl font-bold text-amber-800">
             </div>
             
@@ -83,32 +84,18 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyL5i2qyOILHd2U-ajMk9JindDFVrN6ddreEVsXRHTKft_kXAmsUJ5pqxbQS4Vc--0K/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbw5kc2eGFoFE46ahqZ8E2NWFk1Y1mAIPo0FwBcP5AteRSwwRtcBuf38e4jb9NHT-a6jxg/exec";
         let lastData = [];
-        let unitPrice = 0;
 
-        async function getPriceFromServer() {
+        // 구분 변경 시 수량 칸 노출 여부 결정
+        function toggleQty() {
             const cat = document.getElementById('inCat').value;
-            const date = document.getElementById('inDate').value;
             const qtyBox = document.getElementById('qtyBox');
-            if (!cat.includes("코인")) { qtyBox.style.opacity = "0.4"; unitPrice = 0; return; }
-            
-            qtyBox.style.opacity = "1";
-            document.getElementById('coinLoading').classList.remove('hidden');
-
-            try {
-                const res = await fetch(`${API_URL}?action=getPrice&coin=${encodeURIComponent(cat)}&date=${date}`);
-                const data = await res.json();
-                unitPrice = data.price || 0;
-                calcTotal();
-            } catch (err) { console.error("시세 로드 실패"); }
-            finally { document.getElementById('coinLoading').classList.add('hidden'); }
-        }
-
-        function calcTotal() {
-            const qty = parseFloat(document.getElementById('inQty').value) || 0;
-            if (unitPrice > 0) {
-                document.getElementById('inAmount').value = Math.floor(unitPrice * qty).toLocaleString();
+            if (cat.includes("코인")) {
+                qtyBox.classList.remove('hidden');
+            } else {
+                qtyBox.classList.add('hidden');
+                document.getElementById('inQty').value = "";
             }
         }
 
@@ -124,7 +111,10 @@
                 const res = await fetch(`${API_URL}?action=getCat`), cats = await res.json();
                 sc.innerHTML = '<option value="전체">모든 카테고리</option>';
                 ic.innerHTML = '';
-                cats.forEach(c => { sc.innerHTML += `<option value="${c}">${c}</option>`; ic.innerHTML += `<option value="${c}">${c}</option>`; });
+                cats.forEach(c => {
+                    sc.innerHTML += `<option value="${c}">${c}</option>`;
+                    ic.innerHTML += `<option value="${c}">${c}</option>`;
+                });
             } catch(e) {}
             loadData();
         }
@@ -143,8 +133,11 @@
                         </div>
                         <div class="neu-card p-4 flex justify-between items-center relative z-10">
                             <div class="flex-1 overflow-hidden">
-                                <div class="flex items-center gap-2 mb-1"><span class="text-[9px] font-black text-gray-400 uppercase">${r.category}</span><span class="text-[9px] font-bold text-gray-300">${new Date(r.date).toLocaleDateString()}</span></div>
-                                <div class="text-sm font-bold text-gray-800 truncate">${r.item}</div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[9px] font-black text-gray-400 uppercase">${r.category}</span>
+                                    <span class="text-[9px] font-bold text-gray-300">${new Date(r.date).toLocaleDateString()}</span>
+                                </div>
+                                <div class="text-sm font-bold text-gray-800 truncate">${r.item} ${r.qty ? '('+r.qty+')' : ''}</div>
                             </div>
                             <div class="text-base font-black text-amber-800 ml-3 whitespace-nowrap">${Number(r.amount).toLocaleString()}원</div>
                         </div>
@@ -152,7 +145,17 @@
             } catch(err) { listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">조회 실패</p>'; }
         }
 
-        function openAddForm() { document.getElementById('modalTitle').innerText = "기록하기"; document.getElementById('editRowIdx').value = ""; document.getElementById('inItem').value = ""; document.getElementById('inAmount').value = ""; document.getElementById('inQty').value = ""; unitPrice = 0; document.getElementById('inDate').valueAsDate = new Date(); toggleForm(true); }
+        function openAddForm() { 
+            document.getElementById('modalTitle').innerText = "기록하기"; 
+            document.getElementById('editRowIdx').value = ""; 
+            document.getElementById('inItem').value = ""; 
+            document.getElementById('inAmount').value = ""; 
+            document.getElementById('inQty').value = ""; 
+            document.getElementById('inDate').valueAsDate = new Date(); 
+            toggleQty();
+            toggleForm(true); 
+        }
+
         function openEditForm(idx) { 
             const r = lastData[idx]; 
             document.getElementById('modalTitle').innerText = "수정하기"; 
@@ -161,10 +164,23 @@
             document.getElementById('inCat').value = r.category; 
             document.getElementById('inItem').value = r.item; 
             document.getElementById('inAmount').value = Number(r.amount).toLocaleString(); 
-            document.getElementById('inQty').value = "";
+            document.getElementById('inQty').value = r.qty || "";
+            toggleQty();
             toggleForm(true); 
         }
-        async function save() { const btn = document.getElementById('sBtn'), amt = document.getElementById('inAmount').value.replace(/,/g, ""), rowIdx = document.getElementById('editRowIdx').value; if(!amt || !document.getElementById('inItem').value) return alert("내용을 입력하세요!"); btn.innerText = "저장 중..."; const action = rowIdx ? 'update' : 'add'; await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: action, rowIdx: rowIdx, category: document.getElementById('inCat').value, item: document.getElementById('inItem').value, amount: amt, date: document.getElementById('inDate').value })}); location.reload(); }
+
+        async function save() { 
+            const btn = document.getElementById('sBtn'), amt = document.getElementById('inAmount').value.replace(/,/g, ""), rowIdx = document.getElementById('editRowIdx').value; 
+            if(!amt || !document.getElementById('inItem').value) return alert("내용을 입력하세요!"); 
+            btn.innerText = "저장 중..."; 
+            const action = rowIdx ? 'update' : 'add'; 
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ 
+                action: action, rowIdx: rowIdx, category: document.getElementById('inCat').value, 
+                item: document.getElementById('inItem').value, amount: amt, 
+                date: document.getElementById('inDate').value, qty: document.getElementById('inQty').value 
+            })}); 
+            location.reload(); 
+        }
         async function del(idx) { if(!confirm("삭제하시겠습니까?")) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIdx: idx }) }); location.reload(); }
         function toggleForm(s) { document.getElementById('modal').classList.toggle('hidden', !s); }
         init();
