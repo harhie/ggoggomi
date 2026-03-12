@@ -13,18 +13,22 @@
         body { background: var(--bg); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         .neu-btn { border-radius: 15px; background: var(--bg) !important; box-shadow: 5px 5px 10px var(--dark), -5px -5px 10px var(--light); color: var(--main) !important; font-weight: 800; display: flex; align-items: center; justify-content: center; border: none; outline: none; transition: 0.2s; }
         .neu-btn:active { box-shadow: inset 3px 3px 6px var(--dark), inset -3px -3px 6px var(--light); transform: scale(0.98); }
-        .neu-card { border-radius: 20px; background: var(--bg) !important; box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); transition: 0.3s; }
+        .neu-card { border-radius: 20px; background: var(--bg) !important; box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
         .balance-card { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border: none; }
+        
         .card-container { position: relative; margin-bottom: 25px; padding: 5px; }
-        .btn-group { position: absolute; right: 10px; top: 15px; bottom: 15px; display: flex; gap: 8px; z-index: 0; opacity: 0; transition: 0.2s; }
-        .action-btn { width: 65px; height: 100%; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: white; }
+        .btn-group { position: absolute; right: 10px; top: 15px; bottom: 15px; display: flex; gap: 10px; z-index: 0; opacity: 0; transition: 0.2s; }
+        .action-btn { width: 75px; height: 100%; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .edit-btn { background: var(--main); }
         .del-btn { background: #ef4444; }
-        .card-container.open .neu-card { transform: translateX(-150px); box-shadow: none; }
+        
+        /* 슬라이드 거리 대폭 확장 (180px) */
+        .card-container.open .neu-card { transform: translateX(-180px); box-shadow: none; }
         .card-container.open .btn-group { opacity: 1; }
+
         select, input { background: transparent; outline: none; border: none; width: 100%; }
         select { appearance: none; padding-left: 15px !important; }
-        .loading-text { font-size: 11px; color: #78350f; font-weight: bold; animation: pulse 1s infinite; }
+        .loading-text { font-size: 11px; color: #ef4444; font-weight: bold; animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
@@ -39,7 +43,7 @@
         </header>
 
         <div class="bg-amber-900 rounded-3xl p-7 mb-10 text-white balance-card">
-            <p id="filterTitle" class="text-amber-100 text-xs font-bold tracking-widest mb-1 opacity-70">전체 결과 합계</p>
+            <p id="filterTitle" class="text-amber-100 text-xs font-bold tracking-widest mb-1 opacity-70">전체 합계</p>
             <h2 id="totalAmount" class="text-3xl font-black tracking-tight truncate">0원</h2>
         </div>
 
@@ -54,74 +58,57 @@
     </div>
 
     <div id="modal" class="hidden fixed inset-0 z-50 p-8 overflow-y-auto" style="background: var(--bg);">
-        <div class="flex justify-between items-center mb-12">
+        <div class="flex justify-between items-center mb-10">
             <h2 id="modalTitle" class="text-3xl font-black text-amber-900">기록하기</h2>
             <button onclick="toggleForm(false)" class="neu-btn w-12 h-12 rounded-full text-3xl">&times;</button>
         </div>
         <div class="space-y-6">
             <input type="hidden" id="editRowIdx">
-            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">날짜</label><input type="date" id="inDate" onchange="checkPrice()" class="w-full text-xl font-bold text-gray-800"></div>
-            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">구분</label><select id="inCat" onchange="checkPrice()" class="text-xl font-bold text-gray-800 px-2"></select></div>
-            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="w-full text-xl font-bold text-gray-800"></div>
-
+            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">날짜</label><input type="date" id="inDate" onchange="getPriceFromServer()" class="w-full text-xl font-bold text-gray-800"></div>
+            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">구분</label><select id="inCat" onchange="getPriceFromServer()" class="text-xl font-bold text-gray-800 px-2"></select></div>
+            
             <div id="qtyBox" class="neu-card p-5 opacity-40">
                 <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">수량 (개수)</label>
                 <input type="number" id="inQty" step="any" inputmode="decimal" oninput="calcTotal()" placeholder="0.00" class="w-full text-xl font-bold text-gray-800">
             </div>
+            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="w-full text-xl font-bold text-gray-800"></div>
             
             <div class="neu-card p-5">
-                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW) <span id="coinLoading" class="hidden loading-text ml-2">업비트 시세 확인 중...</span></label>
+                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW) <span id="coinLoading" class="hidden loading-text ml-2">서버 시세 조회 중...</span></label>
                 <input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="w-full text-xl font-bold text-amber-800">
             </div>
             
-            <button onclick="save()" id="sBtn" class="w-full p-5 text-xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95">저장하기</button>
+            <button onclick="save()" id="sBtn" class="w-full p-5 text-xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95 transition-all">저장하기</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwyl6snoUZNwDK9W8lHpJHWOH-2iJZeh1PP0FsiKUo830CAFrAx_GfopDlWmRyPYf2f_A/exec";
+        const API_URL = "여기에_URL_넣으세요";
         let lastData = [];
         let unitPrice = 0;
-        
-        // 업비트 마켓 코드 매핑
-        const COIN_MAP = { "코인-BTC": "KRW-BTC", "코인-ETH": "KRW-ETH", "코인-USDT": "KRW-USDT" };
 
-        async function checkPrice() {
+        async function getPriceFromServer() {
             const cat = document.getElementById('inCat').value;
-            const date = document.getElementById('inDate').value; // yyyy-mm-dd
-            const market = COIN_MAP[cat];
+            const date = document.getElementById('inDate').value;
             const qtyBox = document.getElementById('qtyBox');
-            
-            if (!market) { qtyBox.style.opacity = "0.4"; unitPrice = 0; return; }
+            if (!cat.includes("코인")) { qtyBox.style.opacity = "0.4"; unitPrice = 0; return; }
             
             qtyBox.style.opacity = "1";
             document.getElementById('coinLoading').classList.remove('hidden');
 
             try {
-                // 업비트 일봉 API는 'to' 파라미터로 해당 시점 이전 데이터를 가져옴
-                // 당일 종가를 가져오기 위해 다음날 00시를 기준으로 조회
-                const nextDay = new Date(date);
-                nextDay.setDate(nextDay.getDate() + 1);
-                const toDate = nextDay.toISOString().split('T')[0] + "T00:00:00Z";
-
-                const res = await fetch(`https://api.upbit.com/v1/candles/days?market=${market}&to=${toDate}&count=1`);
+                const res = await fetch(`${API_URL}?action=getPrice&coin=${encodeURIComponent(cat)}&date=${date}`);
                 const data = await res.json();
-                
-                if (data && data.length > 0) {
-                    unitPrice = data[0].trade_price; // trade_price가 해당 날짜의 종가입니다.
-                    calcTotal(); 
-                } else {
-                    unitPrice = 0;
-                }
-            } catch (err) { console.error("업비트 시세 로드 실패", err); }
+                unitPrice = data.price || 0;
+                calcTotal();
+            } catch (err) { console.error("시세 로드 실패"); }
             finally { document.getElementById('coinLoading').classList.add('hidden'); }
         }
 
         function calcTotal() {
             const qty = parseFloat(document.getElementById('inQty').value) || 0;
             if (unitPrice > 0) {
-                const total = Math.floor(unitPrice * qty);
-                document.getElementById('inAmount').value = total.toLocaleString();
+                document.getElementById('inAmount').value = Math.floor(unitPrice * qty).toLocaleString();
             }
         }
 
@@ -154,12 +141,12 @@
                             <div class="action-btn edit-btn" onclick="openEditForm('${idx}'); event.stopPropagation();">수정</div>
                             <div class="action-btn del-btn" onclick="del(${r.rowIdx}); event.stopPropagation();">삭제</div>
                         </div>
-                        <div class="neu-card p-5 flex justify-between items-center relative z-10">
+                        <div class="neu-card p-4 flex justify-between items-center relative z-10">
                             <div class="flex-1 overflow-hidden">
-                                <div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-black text-gray-500 uppercase">${r.category}</span><span class="text-[10px] font-bold text-gray-400">${new Date(r.date).toLocaleDateString()}</span></div>
-                                <div class="text-base font-bold text-gray-800 leading-tight truncate">${r.item}</div>
+                                <div class="flex items-center gap-2 mb-1"><span class="text-[9px] font-black text-gray-400 uppercase">${r.category}</span><span class="text-[9px] font-bold text-gray-300">${new Date(r.date).toLocaleDateString()}</span></div>
+                                <div class="text-sm font-bold text-gray-800 truncate">${r.item}</div>
                             </div>
-                            <div class="text-lg font-black text-amber-800 ml-3 whitespace-nowrap">${Number(r.amount).toLocaleString()}원</div>
+                            <div class="text-base font-black text-amber-800 ml-3 whitespace-nowrap">${Number(r.amount).toLocaleString()}원</div>
                         </div>
                     </div>`).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
             } catch(err) { listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">조회 실패</p>'; }
