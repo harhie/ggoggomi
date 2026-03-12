@@ -16,8 +16,7 @@
     <style>
         :root {
             --bg-color: #F9F4F0;
-            --main-brown: #78350f; /* 메인 갈색 (Amber-900) */
-            --sub-gray: #6b7280;   /* 서브 회색 */
+            --main-brown: #78350f; /* Amber-900 */
             --shadow-dark: #e1dad4;
             --shadow-light: #ffffff;
         }
@@ -28,7 +27,7 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* 뉴모피즘 버튼 (텍스트 갈색으로 변경) */
+        /* 일반 뉴모피즘 버튼 (바탕색과 동일) */
         .neu-btn {
             border-radius: 15px;
             background: var(--bg-color) !important;
@@ -37,7 +36,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--main-brown) !important; /* +, 조회, 저장 버튼 텍스트 갈색 */
+            color: var(--main-brown);
             font-weight: 800;
             border: none;
         }
@@ -61,10 +60,9 @@
 
         #modal::-webkit-scrollbar { display: none; }
         
-        /* 선택창 글자 잘림 방지 및 스타일 */
         select {
             appearance: none;
-            padding-left: 10px !important; /* 왼쪽 잘림 방지 */
+            padding-left: 12px !important;
             background: transparent;
             outline: none;
         }
@@ -134,14 +132,14 @@
                 <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">금액</label>
                 <input type="text" id="inAmount" inputmode="numeric" oninput="formatNumber(this)" placeholder="0" class="w-full text-2xl font-bold text-amber-900 border-b-2 border-gray-100 pb-2 placeholder:text-gray-200">
             </div>
-            <button onclick="save()" id="sBtn" class="neu-btn w-full p-6 text-2xl font-black mb-10">저장하기</button>
+            
+            <button onclick="save()" id="sBtn" class="w-full p-6 text-2xl font-black mb-10 bg-amber-900 text-white rounded-3xl shadow-xl shadow-amber-200 active:scale-95 transition-all">저장하기</button>
         </div>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyZTJToAWOXv1Rq4nClb8fPwz1vnh1kHjGjUh6lC379XEAcOofg6fqBPT4bxqBD-Ny0Tg/exec";
 
-        // 입력 시 천 단위 콤마 추가하는 함수
         function formatNumber(obj) {
             let val = obj.value.replace(/,/g, "").replace(/\D/g, "");
             obj.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -210,7 +208,7 @@
             if(!payload.item || !payload.amount) return alert('항목과 금액을 입력하세요.');
             
             btn.innerText = "저장 중...";
-            btn.style.opacity = "0.5";
+            btn.style.opacity = "0.7";
             try {
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 location.reload(); 
