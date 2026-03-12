@@ -11,98 +11,118 @@
     <meta name="apple-mobile-web-app-title" content="GGomi">
     
     <title>GGomi 가계부</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* 배경색 및 기본 폰트 설정 (청색 -> 갈색으로 변경) */
+        :root {
+            --bg-color: #F9F4F0;
+            --main-color: #78350f;
+            --shadow-dark: #e1dad4;
+            --shadow-light: #ffffff;
+        }
+
         body { 
-            background: #F9F4F0; /* 따뜻한 갈색조 배경 */
+            background: var(--bg-color); 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* 뉴모피즘 입체 효과 스타일 (뉴 카우드 클래스) */
-        .neu-card {
+        .neu-btn {
             border-radius: 15px;
-            background: #F9F4F0;
-            box-shadow: 6px 6px 12px #e1dad4, -6px -6px 12px #ffffff;
+            background: var(--bg-color);
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--main-color);
+            font-weight: 800;
+        }
+
+        .neu-btn:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            transform: scale(0.98);
+        }
+
+        .neu-card {
+            border-radius: 20px;
+            background: var(--bg-color);
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
             padding: 24px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
-        /* 상단 합계 카드 스타일 (청색 -> 갈색 테마) */
         .balance-card { 
-            box-shadow: 0 10px 30px -5px rgba(166, 124, 82, 0.3); /* 갈색톤 그림자 */
+            box-shadow: 0 10px 30px -5px rgba(120, 53, 15, 0.2); 
         }
 
-        /* 입력 모달 스크롤바 숨기기 */
         #modal::-webkit-scrollbar { display: none; }
+        input, select { background: transparent; outline: none; }
     </style>
 </head>
 <body class="p-6">
     <div class="max-w-md mx-auto">
         <header class="flex justify-between items-center mb-8">
-            <div class="flex items-center gap-2">
-                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" alt="GGomi Logo" class="w-14 h-14 rounded-2xl">
-                <h1 class="text-4xl font-black text-amber-800 tracking-tighter">GGomi</h1>
+            <div class="flex items-center gap-3">
+                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" alt="GGomi Logo" class="w-14 h-14 rounded-2xl shadow-sm">
+                <h1 class="text-4xl font-black text-amber-900 tracking-tighter">GGomi</h1>
             </div>
-            <button onclick="toggleForm(true)" class="neu-card !p-0 bg-white w-16 h-16 rounded-full text-4xl shadow-xl transition-all active:scale-95 text-purple-600 flex items-center justify-center">+</button>
+            <button onclick="toggleForm(true)" class="neu-btn w-16 h-16 rounded-full text-4xl">+</button>
         </header>
 
-        <div class="bg-amber-800 rounded-3xl p-6 mb-8 text-white balance-card">
-            <p id="filterTitle" class="text-amber-100 text-xs font-bold tracking-wide mb-1">전체 결과 합계</p>
+        <div class="bg-amber-900 rounded-3xl p-7 mb-10 text-white balance-card">
+            <p id="filterTitle" class="text-amber-200 text-xs font-bold tracking-widest mb-1">전체 결과 합계</p>
             <h2 id="totalAmount" class="text-5xl font-black tracking-tight">0원</h2>
         </div>
 
-        <div id="filterBox" class="neu-card !p-5 mb-6 space-y-4">
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">시작일</label>
-                    <input type="date" id="startDate" class="w-full text-sm font-bold outline-none border-b pb-1">
+        <div class="neu-card space-y-5">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="border-b border-amber-200 pb-1">
+                    <label class="text-[10px] font-bold text-amber-700 uppercase tracking-widest">시작일</label>
+                    <input type="date" id="startDate" class="w-full text-sm font-bold text-amber-900">
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">종료일</label>
-                    <input type="date" id="endDate" class="w-full text-sm font-bold outline-none border-b pb-1">
+                <div class="border-b border-amber-200 pb-1">
+                    <label class="text-[10px] font-bold text-amber-700 uppercase tracking-widest">종료일</label>
+                    <input type="date" id="endDate" class="w-full text-sm font-bold text-amber-900">
                 </div>
             </div>
-            <div class="flex gap-2">
-                <select id="sCat" class="flex-1 bg-gray-50 p-4 rounded-xl text-sm font-bold outline-none">
+            <div class="flex gap-3">
+                <select id="sCat" class="flex-1 bg-amber-50/50 p-4 rounded-2xl text-sm font-bold text-amber-900 border border-amber-100">
                     <option value="전체">모든 카테고리</option>
                 </select>
-                <button onclick="loadData()" class="bg-amber-950 text-white px-6 py-4 rounded-xl text-sm font-bold transition-all active:scale-95">조회</button>
+                <button onclick="loadData()" class="neu-btn px-6 py-4 text-sm">조회</button>
             </div>
         </div>
 
-        <div id="list" class="space-y-4">
-            <p class="text-center py-20 text-gray-300 text-xl font-bold text-amber-400 animate-pulse">데이터를 연결 중입니다...</p>
+        <div id="list" class="space-y-5 pt-4">
+            <p class="text-center py-20 text-amber-200 text-xl font-bold animate-pulse">데이터 연결 중...</p>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-white z-50 p-8 overflow-y-auto">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-3xl font-bold text-amber-950">내역 기록</h2>
-            <button onclick="toggleForm(false)" class="text-gray-400 text-5xl">&times;</button>
+    <div id="modal" class="hidden fixed inset-0 z-50 p-8 overflow-y-auto" style="background: var(--bg-color);">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="text-3xl font-black text-amber-900">내역 기록</h2>
+            <button onclick="toggleForm(false)" class="neu-btn w-12 h-12 rounded-full text-3xl">&times;</button>
         </div>
         
-        <div class="space-y-8">
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">날짜</label>
-                <input type="date" id="inDate" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-amber-600 transition-colors">
+        <div class="space-y-10">
+            <div class="neu-card !p-6">
+                <label class="block text-xs font-bold text-amber-700 mb-2 uppercase tracking-widest">날짜</label>
+                <input type="date" id="inDate" class="w-full text-2xl font-bold text-amber-900 border-b-2 border-amber-100 pb-2">
             </div>
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">구분</label>
-                <select id="inCat" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none"></select>
+            <div class="neu-card !p-6">
+                <label class="block text-xs font-bold text-amber-700 mb-2 uppercase tracking-widest">구분</label>
+                <select id="inCat" class="w-full text-2xl font-bold text-amber-900 border-b-2 border-amber-100 pb-2"></select>
             </div>
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">항목</label>
-                <input type="text" id="inItem" placeholder="어디에 쓰셨나요?" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-amber-600 transition-colors">
+            <div class="neu-card !p-6">
+                <label class="block text-xs font-bold text-amber-700 mb-2 uppercase tracking-widest">항목</label>
+                <input type="text" id="inItem" placeholder="내용 입력" class="w-full text-2xl font-bold text-amber-900 border-b-2 border-amber-100 pb-2 placeholder:text-amber-100">
             </div>
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">금액</label>
-                <input type="number" id="inAmount" placeholder="0" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-amber-600 transition-colors">
+            <div class="neu-card !p-6">
+                <label class="block text-xs font-bold text-amber-700 mb-2 uppercase tracking-widest">금액</label>
+                <input type="number" id="inAmount" placeholder="0" class="w-full text-2xl font-bold text-amber-900 border-b-2 border-amber-100 pb-2 placeholder:text-amber-100">
             </div>
-            <button onclick="save()" id="sBtn" class="w-full bg-amber-700 text-white p-6 rounded-3xl text-2xl font-black shadow-2xl shadow-amber-100 transition-all active:scale-95">저장하기</button>
+            <button onclick="save()" id="sBtn" class="neu-btn w-full p-6 text-2xl font-black mb-10">저장하기</button>
         </div>
     </div>
 
@@ -114,11 +134,11 @@
             try {
                 const catRes = await fetch(`${API_URL}?action=getCategories`);
                 const cats = await catRes.json();
-                const searchCat = document.getElementById('sCat');
-                const inputCat = document.getElementById('inCat');
+                const sCat = document.getElementById('sCat');
+                const inCat = document.getElementById('inCat');
                 cats.forEach(c => {
-                    searchCat.innerHTML += `<option value="${c}">${c}</option>`;
-                    inputCat.innerHTML += `<option value="${c}">${c}</option>`;
+                    sCat.innerHTML += `<option value="${c}">${c}</option>`;
+                    inCat.innerHTML += `<option value="${c}">${c}</option>`;
                 });
             } catch(e) { console.error("카테고리 로드 실패"); }
             loadData();
@@ -131,11 +151,10 @@
             const listDiv = document.getElementById('list');
             const totalDisplay = document.getElementById('totalAmount');
             
-            listDiv.innerHTML = '<p class="text-center py-10 text-gray-400">조회 중...</p>';
+            listDiv.innerHTML = '<p class="text-center py-10 text-amber-200 font-bold">조회 중...</p>';
 
             try {
-                const fetchUrl = `${API_URL}?action=getEntries&start=${start}&end=${end}&category=${encodeURIComponent(cat)}`;
-                const res = await fetch(fetchUrl);
+                const res = await fetch(`${API_URL}?action=getEntries&start=${start}&end=${end}&category=${encodeURIComponent(cat)}`);
                 const data = await res.json();
                 
                 const sum = data.reduce((acc, row) => acc + Number(row[3]), 0);
@@ -143,18 +162,21 @@
                 document.getElementById('filterTitle').innerText = `${cat} 검색 결과 합계`;
 
                 listDiv.innerHTML = data.length ? data.map(row => `
-                    <div class="neu-card flex justify-between items-center">
-                        <div>
-                            <div class="text-2xl font-bold text-gray-800">${row[2]}</div>
-                            <div class="text-sm text-gray-500 font-bold">${row[1]} | ${new Date(row[0]).toLocaleDateString().slice(5)}</div>
+                    <div class="neu-card flex justify-between items-center !mb-5">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[11px] font-black text-amber-600 uppercase tracking-widest">${row[1]}</span>
+                                <span class="text-[11px] font-bold text-amber-400">${new Date(row[0]).toLocaleDateString()}</span>
+                            </div>
+                            <div class="text-2xl font-bold text-amber-900 leading-tight">${row[2]}</div>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right ml-4">
                             <div class="text-2xl font-black text-amber-700">${Number(row[3]).toLocaleString()}원</div>
                         </div>
                     </div>
-                `).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
+                `).join('') : '<p class="text-center py-20 text-amber-300 font-bold">내역이 없습니다.</p>';
             } catch(err) {
-                listDiv.innerHTML = '<p class="text-center py-20 text-red-500 font-bold">데이터 연결 실패</p>';
+                listDiv.innerHTML = '<p class="text-center py-20 text-red-300 font-bold">데이터 연결 실패</p>';
             }
         }
 
@@ -169,15 +191,14 @@
             if(!payload.item || !payload.amount) return alert('항목과 금액을 입력하세요.');
             
             btn.innerText = "저장 중...";
-            btn.disabled = true;
+            btn.style.opacity = "0.5";
             try {
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                toggleForm(false);
                 location.reload(); 
             } catch(e) {
                 alert("저장 실패");
                 btn.innerText = "저장하기";
-                btn.disabled = false;
+                btn.style.opacity = "1";
             }
         }
 
