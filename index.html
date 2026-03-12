@@ -13,19 +13,18 @@
         body { background: var(--bg); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         .neu-btn { border-radius: 15px; background: var(--bg) !important; box-shadow: 5px 5px 10px var(--dark), -5px -5px 10px var(--light); color: var(--main) !important; font-weight: 800; display: flex; align-items: center; justify-content: center; border: none; outline: none; transition: 0.2s; }
         .neu-btn:active { box-shadow: inset 3px 3px 6px var(--dark), inset -3px -3px 6px var(--light); transform: scale(0.98); }
-        .neu-card { border-radius: 20px; background: var(--bg) !important; box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); transition: transform 0.3s; }
+        .neu-card { border-radius: 20px; background: var(--bg) !important; box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); transition: 0.3s; }
         .balance-card { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border: none; }
         .card-container { position: relative; margin-bottom: 25px; padding: 5px; }
         .btn-group { position: absolute; right: 10px; top: 15px; bottom: 15px; display: flex; gap: 8px; z-index: 0; opacity: 0; transition: 0.2s; }
         .action-btn { width: 65px; height: 100%; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: white; }
         .edit-btn { background: var(--main); }
         .del-btn { background: #ef4444; }
-        /* 슬라이드 거리 확장 (150px) */
         .card-container.open .neu-card { transform: translateX(-150px); box-shadow: none; }
         .card-container.open .btn-group { opacity: 1; }
         select, input { background: transparent; outline: none; border: none; width: 100%; }
         select { appearance: none; padding-left: 15px !important; }
-        .loading-text { font-size: 11px; color: #78350f; font-weight: bold; animation: pulse 1s infinite; }
+        .loading-text { font-size: 11px; color: #ef4444; font-weight: bold; animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
@@ -63,26 +62,24 @@
             <input type="hidden" id="editRowIdx">
             <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">날짜</label><input type="date" id="inDate" onchange="checkPrice()" class="w-full text-xl font-bold text-gray-800"></div>
             <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">구분</label><select id="inCat" onchange="checkPrice()" class="text-xl font-bold text-gray-800 px-2"></select></div>
-            
             <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="w-full text-xl font-bold text-gray-800"></div>
 
-            <div id="qtyBox" class="neu-card p-5 opacity-40 transition-opacity">
+            <div id="qtyBox" class="neu-card p-5 opacity-40">
                 <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">수량 (개수)</label>
                 <input type="number" id="inQty" step="any" inputmode="decimal" oninput="calcTotal()" placeholder="0.00" class="w-full text-xl font-bold text-gray-800">
             </div>
             
             <div class="neu-card p-5">
-                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW) <span id="coinLoading" class="hidden loading-text ml-2">당일 종가 조회 중...</span></label>
+                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW) <span id="coinLoading" class="hidden loading-text ml-2">시세 확인 중...</span></label>
                 <input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="w-full text-xl font-bold text-amber-800">
             </div>
             
-            <button onclick="save()" id="sBtn" class="w-full p-5 text-xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95">저장하기</button>
+            <button onclick="save()" id="sBtn" class="w-full p-5 text-xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95 transition-all">저장하기</button>
         </div>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwyl6snoUZNwDK9W8lHpJHWOH-2iJZeh1PP0FsiKUo830CAFrAx_GfopDlWmRyPYf2f_A/exec";
-        let currentData = [];
         let unitPrice = 0;
         const COIN_MAP = { "코인-BTC": "bitcoin", "코인-ETH": "ethereum", "코인-USDT": "tether" };
 
@@ -91,23 +88,31 @@
             const date = document.getElementById('inDate').value;
             const coinId = COIN_MAP[cat];
             const qtyBox = document.getElementById('qtyBox');
+            
             if (!coinId) { qtyBox.style.opacity = "0.4"; unitPrice = 0; return; }
+            
             qtyBox.style.opacity = "1";
-            const loader = document.getElementById('coinLoading');
-            loader.classList.remove('hidden');
+            document.getElementById('coinLoading').classList.remove('hidden');
+
             try {
                 const [y, m, d] = date.split('-');
+                // dd-mm-yyyy 포맷으로 전송
                 const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/history?date=${d}-${m}-${y}&localization=false`);
                 const data = await res.json();
-                unitPrice = data.market_data.current_price.krw;
-                calcTotal(); // 시세 가져온 후 즉시 계산
-            } catch (err) { console.error("시세 로드 실패", err); }
-            finally { loader.classList.add('hidden'); }
+                
+                if (data.market_data && data.market_data.current_price) {
+                    unitPrice = data.market_data.current_price.krw;
+                    calcTotal(); 
+                } else {
+                    alert("해당 날짜의 시세 데이터가 없습니다.");
+                    unitPrice = 0;
+                }
+            } catch (err) { alert("시세 로드 실패. 잠시 후 다시 시도하세요."); }
+            finally { document.getElementById('coinLoading').classList.add('hidden'); }
         }
 
         function calcTotal() {
-            const qtyStr = document.getElementById('inQty').value;
-            const qty = parseFloat(qtyStr) || 0;
+            const qty = parseFloat(document.getElementById('inQty').value) || 0;
             if (unitPrice > 0) {
                 const total = Math.floor(unitPrice * qty);
                 document.getElementById('inAmount').value = total.toLocaleString();
@@ -135,31 +140,58 @@
             const listDiv = document.getElementById('list'), s = document.getElementById('startDate').value, e = document.getElementById('endDate').value, c = document.getElementById('sCat').value;
             try {
                 const res = await fetch(`${API_URL}?start=${s}&end=${e}&cat=${encodeURIComponent(c || '전체')}`);
-                currentData = await res.json();
-                document.getElementById('totalAmount').innerText = currentData.reduce((acc, r) => acc + Number(r.amount), 0).toLocaleString() + '원';
-                listDiv.innerHTML = currentData.length ? currentData.map((r, idx) => `
+                const data = await res.json();
+                document.getElementById('totalAmount').innerText = data.reduce((acc, r) => acc + Number(r.amount), 0).toLocaleString() + '원';
+                listDiv.innerHTML = data.length ? data.map((r, idx) => `
                     <div class="card-container" onclick="this.classList.toggle('open')">
                         <div class="btn-group">
-                            <div class="action-btn edit-btn" onclick="openEditForm(${idx}); event.stopPropagation();">수정</div>
+                            <div class="action-btn edit-btn" onclick="openEditForm('${idx}'); event.stopPropagation();">수정</div>
                             <div class="action-btn del-btn" onclick="del(${r.rowIdx}); event.stopPropagation();">삭제</div>
                         </div>
                         <div class="neu-card p-5 flex justify-between items-center relative z-10">
                             <div class="flex-1 overflow-hidden">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-[10px] font-black text-gray-500 uppercase">${r.category}</span>
-                                    <span class="text-[10px] font-bold text-gray-400">${new Date(r.date).toLocaleDateString()}</span>
-                                </div>
+                                <div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-black text-gray-500 uppercase">${r.category}</span><span class="text-[10px] font-bold text-gray-400">${new Date(r.date).toLocaleDateString()}</span></div>
                                 <div class="text-base font-bold text-gray-800 leading-tight truncate">${r.item}</div>
                             </div>
                             <div class="text-lg font-black text-amber-800 ml-3 whitespace-nowrap">${Number(r.amount).toLocaleString()}원</div>
                         </div>
                     </div>`).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
+                // currentData를 전역 변수 대신 이 안에서 관리하거나 data를 매개변수로 전달하도록 수정
+                window.lastData = data; 
             } catch(err) { listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">조회 실패</p>'; }
         }
 
-        function openAddForm() { document.getElementById('modalTitle').innerText = "기록하기"; document.getElementById('editRowIdx').value = ""; document.getElementById('inItem').value = ""; document.getElementById('inAmount').value = ""; document.getElementById('inQty').value = ""; unitPrice = 0; document.getElementById('inDate').valueAsDate = new Date(); toggleForm(true); }
-        function openEditForm(idx) { const r = currentData[idx]; document.getElementById('modalTitle').innerText = "수정하기"; document.getElementById('editRowIdx').value = r.rowIdx; document.getElementById('inDate').value = new Date(r.date).toISOString().split('T')[0]; document.getElementById('inCat').value = r.category; document.getElementById('inItem').value = r.item; document.getElementById('inAmount').value = Number(r.amount).toLocaleString(); document.getElementById('inQty').value = ""; toggleForm(true); }
-        async function save() { const btn = document.getElementById('sBtn'), amt = document.getElementById('inAmount').value.replace(/,/g, ""), rowIdx = document.getElementById('editRowIdx').value; if(!amt || !document.getElementById('inItem').value) return alert("내용을 입력하세요!"); btn.innerText = "저장 중..."; const action = rowIdx ? 'update' : 'add'; await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: action, rowIdx: rowIdx, category: document.getElementById('inCat').value, item: document.getElementById('inItem').value, amount: amt, date: document.getElementById('inDate').value })}); location.reload(); }
+        function openAddForm() { 
+            document.getElementById('modalTitle').innerText = "기록하기"; 
+            document.getElementById('editRowIdx').value = ""; 
+            document.getElementById('inItem').value = ""; 
+            document.getElementById('inAmount').value = ""; 
+            document.getElementById('inQty').value = ""; 
+            unitPrice = 0; 
+            document.getElementById('inDate').valueAsDate = new Date(); 
+            toggleForm(true); 
+        }
+
+        function openEditForm(idx) { 
+            const r = window.lastData[idx]; 
+            document.getElementById('modalTitle').innerText = "수정하기"; 
+            document.getElementById('editRowIdx').value = r.rowIdx; 
+            document.getElementById('inDate').value = new Date(r.date).toISOString().split('T')[0]; 
+            document.getElementById('inCat').value = r.category; 
+            document.getElementById('inItem').value = r.item; 
+            document.getElementById('inAmount').value = Number(r.amount).toLocaleString(); 
+            document.getElementById('inQty').value = "";
+            toggleForm(true); 
+        }
+
+        async function save() { 
+            const btn = document.getElementById('sBtn'), amt = document.getElementById('inAmount').value.replace(/,/g, ""), rowIdx = document.getElementById('editRowIdx').value; 
+            if(!amt || !document.getElementById('inItem').value) return alert("내용을 입력하세요!"); 
+            btn.innerText = "저장 중..."; 
+            const action = rowIdx ? 'update' : 'add'; 
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: action, rowIdx: rowIdx, category: document.getElementById('inCat').value, item: document.getElementById('inItem').value, amount: amt, date: document.getElementById('inDate').value })}); 
+            location.reload(); 
+        }
         async function del(idx) { if(!confirm("삭제하시겠습니까?")) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIdx: idx }) }); location.reload(); }
         function toggleForm(s) { document.getElementById('modal').classList.toggle('hidden', !s); }
         init();
