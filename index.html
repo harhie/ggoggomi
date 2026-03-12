@@ -10,25 +10,27 @@
     <title>GGOMI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --bg: #F9F4F0; --main: #78350f; --shadow-dark: #e1dad4; --shadow-light: #ffffff; }
-        body { background: var(--bg); font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --bg: #F9F4F0; --main: #78350f; --dark: #e1dad4; --light: #ffffff; }
+        body { background: var(--bg); font-family: sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
-        /* 뉴모피즘 입체 버튼 */
+        /* 뉴모피즘 버튼 & 카드 */
         .neu-btn { 
             border-radius: 15px; background: var(--bg) !important; 
-            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); 
+            box-shadow: 5px 5px 10px var(--dark), -5px -5px 10px var(--light); 
             color: var(--main) !important; font-weight: 800; display: flex; align-items: center; justify-content: center; 
-            transition: 0.2s; border: none; 
+            transition: 0.2s; border: none; outline: none;
         }
-        .neu-btn:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); transform: scale(0.98); }
-        
+        .neu-btn:active { box-shadow: inset 3px 3px 6px var(--dark), inset -3px -3px 6px var(--light); transform: scale(0.98); }
         .neu-card { 
             border-radius: 20px; background: var(--bg) !important; 
-            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); 
+            box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); 
         }
 
-        /* 삭제 슬라이드 애니메이션 */
-        .card-container { position: relative; overflow: hidden; border-radius: 20px; margin-bottom: 20px; }
+        /* 합계 카드 (노란 그림자 제거, 깔끔한 어두운 그림자만) */
+        .balance-card { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+
+        /* 삭제 슬라이드 */
+        .card-container { position: relative; overflow: hidden; border-radius: 20px; margin-bottom: 16px; }
         .delete-btn { 
             position: absolute; right: 0; top: 0; bottom: 0; width: 80px; 
             background: #ef4444; color: white; display: flex; align-items: center; 
@@ -38,21 +40,21 @@
         .card-container.open .neu-card { transform: translateX(-80px); border-radius: 20px 0 0 20px; }
         .card-container.open .delete-btn { transform: translateX(0); }
 
-        select { appearance: none; padding-left: 15px !important; background: transparent; outline: none; border: none; }
-        input { background: transparent; outline: none; border: none; }
+        select { appearance: none; padding-left: 15px !important; background: transparent; outline: none; border: none; width: 100%; }
+        input { background: transparent; outline: none; border: none; width: 100%; }
     </style>
 </head>
 <body class="p-6">
     <div class="max-w-md mx-auto">
         <header class="flex justify-between items-center mb-8">
             <div class="flex items-center gap-3">
-                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" class="w-14 h-14 rounded-2xl shadow-sm">
+                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" class="w-14 h-14 rounded-2xl">
                 <h1 class="text-4xl font-black text-amber-900 uppercase tracking-tighter">GGOMI</h1>
             </div>
             <button onclick="toggleForm(true)" class="neu-btn w-16 h-16 rounded-full text-4xl">+</button>
         </header>
 
-        <div class="bg-amber-900 rounded-3xl p-7 mb-10 text-white shadow-xl shadow-amber-200">
+        <div class="bg-amber-900 rounded-3xl p-7 mb-10 text-white balance-card">
             <p id="filterTitle" class="text-amber-200 text-xs font-bold tracking-widest mb-1">전체 결과 합계</p>
             <h2 id="totalAmount" class="text-5xl font-black tracking-tight">0원</h2>
         </div>
@@ -60,22 +62,24 @@
         <div class="neu-card p-6 mb-8 space-y-5">
             <div class="grid grid-cols-2 gap-4">
                 <div class="border-b border-gray-200 pb-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">시작일</label>
-                    <input type="date" id="startDate" class="w-full text-sm font-bold text-gray-800">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">시작일</label>
+                    <input type="date" id="startDate" class="text-sm font-bold text-gray-800">
                 </div>
                 <div class="border-b border-gray-200 pb-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">종료일</label>
-                    <input type="date" id="endDate" class="w-full text-sm font-bold text-gray-800">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">종료일</label>
+                    <input type="date" id="endDate" class="text-sm font-bold text-gray-800">
                 </div>
             </div>
             <div class="flex gap-3">
-                <select id="sCat" class="flex-1 bg-gray-100/50 p-4 rounded-2xl text-sm font-bold text-gray-800"></select>
+                <div class="flex-1 bg-gray-100/50 rounded-2xl overflow-hidden">
+                    <select id="sCat" class="p-4 text-sm font-bold text-gray-800"></select>
+                </div>
                 <button onclick="loadData()" class="neu-btn px-6 py-4 text-sm font-bold">조회</button>
             </div>
         </div>
 
         <div id="list" class="space-y-1">
-            <p class="text-center py-20 text-gray-300 font-bold animate-pulse">데이터를 불러오고 있습니다...</p>
+            <p class="text-center py-20 text-gray-300 font-bold animate-pulse">서버 연결 중...</p>
         </div>
     </div>
 
@@ -84,31 +88,18 @@
             <h2 class="text-3xl font-black text-amber-900">기록하기</h2>
             <button onclick="toggleForm(false)" class="neu-btn w-12 h-12 rounded-full text-3xl">&times;</button>
         </div>
-        
-        <div class="space-y-10">
-            <div class="neu-card !p-6">
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">날짜</label>
-                <input type="date" id="inDate" class="w-full text-2xl font-bold text-gray-800">
-            </div>
-            <div class="neu-card !p-6">
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">구분</label>
-                <select id="inCat" class="w-full text-2xl font-bold text-gray-800 px-4"></select>
-            </div>
-            <div class="neu-card !p-6">
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">항목</label>
-                <input type="text" id="inItem" placeholder="내용 입력" class="w-full text-2xl font-bold text-gray-800">
-            </div>
-            <div class="neu-card !p-6">
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">금액</label>
-                <input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="w-full text-2xl font-bold text-amber-800">
-            </div>
+        <div class="space-y-8">
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">날짜</label><input type="date" id="inDate" class="text-2xl font-bold text-gray-800"></div>
+            <div class="neu-card p-6 overflow-hidden"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">구분</label><select id="inCat" class="text-2xl font-bold text-gray-800"></select></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="text-2xl font-bold text-gray-800"></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">금액</label><input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="text-2xl font-bold text-amber-800"></div>
             <button onclick="save()" id="sBtn" class="w-full p-6 text-2xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95">저장하기</button>
         </div>
     </div>
 
     <script>
-        // 🚨 여기에 구글에서 새로 배포한 주소를 정확히 넣으세요
-        const API_URL = "https://script.google.com/macros/s/AKfycbxe5PnV5bTOlOFi2jQTCDJfzuELgoK0rs1NOjl5jYL6heR_uHbERtCoTX2Ys-LIm2wR/exec";
+        // 🚨 여기에 구글에서 새로 배포한 URL을 정확히 넣으세요
+        const API_URL = "여기에_배포_URL_넣으세요";
 
         function fNum(obj) {
             let v = obj.value.replace(/,/g, "").replace(/\D/g, "");
@@ -127,38 +118,41 @@
                     sc.innerHTML += `<option value="${c}">${c}</option>`;
                     ic.innerHTML += `<option value="${c}">${c}</option>`;
                 });
-                loadData();
-            } catch(e) {
-                document.getElementById('list').innerHTML = '<p class="text-center py-20 text-red-500 font-bold">카테고리 동기화 실패<br>API 주소를 확인하세요.</p>';
-            }
+            } catch(e) { console.error("Cat load failed"); }
+            loadData(); // 카테고리 로딩 실패해도 리스트는 불러오기 시도
         }
 
         async function loadData() {
-            const s = document.getElementById('startDate').value;
-            const e = document.getElementById('endDate').value;
-            const c = document.getElementById('sCat').value;
-            const res = await fetch(`${API_URL}?start=${s}&end=${e}&cat=${encodeURIComponent(c || '전체')}`);
-            const data = await res.json();
-            
-            const sum = data.reduce((acc, r) => acc + Number(r.amount), 0);
-            document.getElementById('totalAmount').innerText = sum.toLocaleString() + '원';
-            document.getElementById('filterTitle').innerText = `${c || '전체'} 결과 합계`;
+            const listDiv = document.getElementById('list');
+            try {
+                const s = document.getElementById('startDate').value;
+                const e = document.getElementById('endDate').value;
+                const c = document.getElementById('sCat').value;
+                const res = await fetch(`${API_URL}?start=${s}&end=${e}&cat=${encodeURIComponent(c || '전체')}`);
+                const data = await res.json();
+                
+                const sum = data.reduce((acc, r) => acc + Number(r.amount), 0);
+                document.getElementById('totalAmount').innerText = sum.toLocaleString() + '원';
+                document.getElementById('filterTitle').innerText = `${c || '전체'} 결과 합계`;
 
-            document.getElementById('list').innerHTML = data.map(r => `
-                <div class="card-container" onclick="this.classList.toggle('open')">
-                    <div class="neu-card p-6 flex justify-between items-center relative z-10">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[11px] font-black text-gray-500 uppercase">${r.category}</span>
-                                <span class="text-[11px] font-bold text-gray-400">${new Date(r.date).toLocaleDateString()}</span>
+                listDiv.innerHTML = data.map(r => `
+                    <div class="card-container" onclick="this.classList.toggle('open')">
+                        <div class="neu-card p-6 flex justify-between items-center relative z-10">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest">${r.category}</span>
+                                    <span class="text-[11px] font-bold text-gray-400">${new Date(r.date).toLocaleDateString()}</span>
+                                </div>
+                                <div class="text-2xl font-bold text-gray-800 leading-tight">${r.item}</div>
                             </div>
-                            <div class="text-2xl font-bold text-gray-800 leading-tight">${r.item}</div>
+                            <div class="text-2xl font-black text-amber-800 ml-4">${Number(r.amount).toLocaleString()}원</div>
                         </div>
-                        <div class="text-2xl font-black text-amber-800 ml-4">${Number(r.amount).toLocaleString()}원</div>
+                        <div class="delete-btn" onclick="del(${r.rowIdx})">삭제</div>
                     </div>
-                    <div class="delete-btn" onclick="del(${r.rowIdx})">삭제</div>
-                </div>
-            `).join('') || '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
+                `).join('') || '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
+            } catch(err) {
+                listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">데이터를 불러올 수 없습니다.<br>URL 설정을 확인하세요.</p>';
+            }
         }
 
         async function del(idx) {
