@@ -3,8 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png">
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GGomi">
+    
     <title>GGomi 가계부</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com">
+
+
+        .neu-card {
+    border-radius: 15px;
+    background: #F9FAFC;
+    box-shadow: 6px 6px 6px #dedfe0, -6px -6px 6px #ffffff;
+    padding: 24px;
+    margin-bottom: 16px;
+}
+
+/* 배경색을 그림자와 맞춤 */
+body {
+    background: #F9FAFC;
+}
+        
+    </script>
     <style>
       body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
       .balance-card { box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.2); }
@@ -112,18 +136,18 @@
             totalDisplay.innerText = sum.toLocaleString() + '원';
             document.getElementById('filterTitle').innerText = `${cat} 검색 결과 합계`;
 
-            listDiv.innerHTML = data.length ? data.map(row => `
-                <div class="bg-white p-6 rounded-3xl shadow-sm flex justify-between items-center border border-gray-50">
-                    <div>
-                        <div class="text-2xl font-bold mb-1">${row[2]}</div>
-                        <div class="text-sm text-gray-400">${row[1]} | ${new Date(row[0]).toLocaleDateString().slice(5)}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-3xl font-black text-indigo-600">${Number(row[3]).toLocaleString()}원</div>
-                        <div class="text-[10px] text-gray-300">잔액: ${Number(row[4]).toLocaleString()}</div>
-                    </div>
-                </div>
-            `).join('') : `<div class="p-10 text-center text-gray-400 bg-white rounded-2xl border">해당 기간의 ${cat} 내역이 없습니다.</div>`;
+           // 기존 bg-white p-5... 부분을 neu-card로 교체
+list.innerHTML = data.length ? data.map(row => `
+    <div class="neu-card flex justify-between items-center">
+        <div>
+            <div class="text-2xl font-bold text-gray-800">${row[2]}</div>
+            <div class="text-sm text-gray-500 font-bold">${row[1]} | ${new Date(row[0]).toLocaleDateString().slice(5)}</div>
+        </div>
+        <div class="text-right">
+            <div class="text-2xl font-black text-indigo-600">${Number(row[3]).toLocaleString()}원</div>
+        </div>
+    </div>
+`).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
         }
 
         async function save() {
