@@ -15,25 +15,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* 배경색 및 기본 폰트 설정 */
+        /* 배경색 및 기본 폰트 설정 (청색 -> 갈색으로 변경) */
         body { 
-            background: #F9FAFC; 
+            background: #F9F4F0; /* 따뜻한 갈색조 배경 */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* 요청하신 뉴모피즘 카드 스타일 */
+        /* 뉴모피즘 입체 효과 스타일 (뉴 카우드 클래스) */
         .neu-card {
             border-radius: 15px;
-            background: #F9FAFC;
-            box-shadow: 6px 6px 6px #dedfe0, -6px -6px 6px #ffffff;
+            background: #F9F4F0;
+            box-shadow: 6px 6px 12px #e1dad4, -6px -6px 12px #ffffff;
             padding: 24px;
             margin-bottom: 16px;
         }
 
-        /* 상단 합계 카드 스타일 */
+        /* 상단 합계 카드 스타일 (청색 -> 갈색 테마) */
         .balance-card { 
-            box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.2); 
+            box-shadow: 0 10px 30px -5px rgba(166, 124, 82, 0.3); /* 갈색톤 그림자 */
         }
 
         /* 입력 모달 스크롤바 숨기기 */
@@ -45,17 +45,17 @@
         <header class="flex justify-between items-center mb-8">
             <div class="flex items-center gap-2">
                 <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" alt="GGomi Logo" class="w-14 h-14 rounded-2xl">
-                <h1 class="text-4xl font-black text-indigo-600 tracking-tighter">GGomi</h1>
+                <h1 class="text-4xl font-black text-amber-800 tracking-tighter">GGomi</h1>
             </div>
-            <button onclick="toggleForm(true)" class="bg-indigo-600 text-white w-16 h-16 rounded-full text-4xl shadow-xl transition-all active:scale-95">+</button>
+            <button onclick="toggleForm(true)" class="neu-card !p-0 bg-white w-16 h-16 rounded-full text-4xl shadow-xl transition-all active:scale-95 text-purple-600 flex items-center justify-center">+</button>
         </header>
 
-        <div class="bg-indigo-600 rounded-3xl p-6 mb-8 text-white balance-card">
-            <p id="filterTitle" class="text-indigo-200 text-xs font-bold tracking-wide mb-1">전체 결과 합계</p>
+        <div class="bg-amber-800 rounded-3xl p-6 mb-8 text-white balance-card">
+            <p id="filterTitle" class="text-amber-100 text-xs font-bold tracking-wide mb-1">전체 결과 합계</p>
             <h2 id="totalAmount" class="text-5xl font-black tracking-tight">0원</h2>
         </div>
 
-        <div class="bg-white p-5 rounded-3xl shadow-sm mb-6 border border-gray-100 space-y-4">
+        <div id="filterBox" class="neu-card !p-5 mb-6 space-y-4">
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">시작일</label>
@@ -70,25 +70,25 @@
                 <select id="sCat" class="flex-1 bg-gray-50 p-4 rounded-xl text-sm font-bold outline-none">
                     <option value="전체">모든 카테고리</option>
                 </select>
-                <button onclick="loadData()" class="bg-gray-900 text-white px-6 py-4 rounded-xl text-sm font-bold transition-all active:scale-95">조회</button>
+                <button onclick="loadData()" class="bg-amber-950 text-white px-6 py-4 rounded-xl text-sm font-bold transition-all active:scale-95">조회</button>
             </div>
         </div>
 
         <div id="list" class="space-y-4">
-            <p class="text-center py-20 text-gray-300 text-xl font-bold text-indigo-400 animate-pulse">데이터를 연결 중입니다...</p>
+            <p class="text-center py-20 text-gray-300 text-xl font-bold text-amber-400 animate-pulse">데이터를 연결 중입니다...</p>
         </div>
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-white z-50 p-8 overflow-y-auto">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-3xl font-bold text-indigo-950">내역 기록</h2>
+            <h2 class="text-3xl font-bold text-amber-950">내역 기록</h2>
             <button onclick="toggleForm(false)" class="text-gray-400 text-5xl">&times;</button>
         </div>
         
         <div class="space-y-8">
             <div>
                 <label class="block text-sm font-bold text-gray-400 mb-2">날짜</label>
-                <input type="date" id="inDate" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-indigo-600 transition-colors">
+                <input type="date" id="inDate" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-amber-600 transition-colors">
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-400 mb-2">구분</label>
@@ -96,13 +96,13 @@
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-400 mb-2">항목</label>
-                <input type="text" id="inItem" placeholder="어디에 쓰셨나요?" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-indigo-600 transition-colors">
+                <input type="text" id="inItem" placeholder="어디에 쓰셨나요?" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-amber-600 transition-colors">
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-400 mb-2">금액</label>
-                <input type="number" id="inAmount" placeholder="0" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-indigo-600 transition-colors">
+                <input type="number" id="inAmount" placeholder="0" class="w-full border-b-4 border-gray-100 p-4 text-2xl font-bold outline-none focus:border-amber-600 transition-colors">
             </div>
-            <button onclick="save()" id="sBtn" class="w-full bg-indigo-600 text-white p-6 rounded-3xl text-2xl font-black shadow-2xl shadow-indigo-200 transition-all active:scale-95">저장하기</button>
+            <button onclick="save()" id="sBtn" class="w-full bg-amber-700 text-white p-6 rounded-3xl text-2xl font-black shadow-2xl shadow-amber-100 transition-all active:scale-95">저장하기</button>
         </div>
     </div>
 
@@ -149,7 +149,7 @@
                             <div class="text-sm text-gray-500 font-bold">${row[1]} | ${new Date(row[0]).toLocaleDateString().slice(5)}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-2xl font-black text-indigo-600">${Number(row[3]).toLocaleString()}원</div>
+                            <div class="text-2xl font-black text-amber-700">${Number(row[3]).toLocaleString()}원</div>
                         </div>
                     </div>
                 `).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
