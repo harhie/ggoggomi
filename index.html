@@ -14,10 +14,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* 바탕색과 버튼색을 동일하게 세팅 (#F9F4F0) */
+        /* 바탕색과 모든 버튼/카드의 배경색을 #F9F4F0로 완전 통일 */
         :root {
             --bg-color: #F9F4F0;
-            --main-brown: #78350f; /* 메인 갈색 */
+            --main-brown: #78350f; /* 메인 컬러: 진한 갈색 */
             --shadow-dark: #e1dad4;
             --shadow-light: #ffffff;
         }
@@ -28,17 +28,18 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* 뉴모피즘 입체 버튼 스타일 (바탕색과 일치) */
+        /* [핵심] 뉴모피즘 입체 버튼 스타일 (바탕색과 일치해야 함) */
         .neu-btn {
             border-radius: 15px;
-            background: var(--bg-color);
+            background: var(--bg-color) !important; /* 배경색 강제 일치 */
             box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--main-brown); /* 모든 글자와 아이콘은 갈색 */
+            color: var(--main-brown); /* +, X, 조회, 저장 등 모든 텍스트/아이콘은 갈색 */
             font-weight: 800;
+            border: none;
         }
 
         /* 버튼 클릭 시 쏙 들어가는 효과 */
@@ -50,7 +51,7 @@
         /* 입체 카드 스타일 */
         .neu-card {
             border-radius: 20px;
-            background: var(--bg-color);
+            background: var(--bg-color) !important;
             box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
             padding: 24px;
             margin-bottom: 20px;
@@ -91,7 +92,7 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <select id="sCat" class="flex-1 bg-amber-50/50 p-4 rounded-2xl text-sm font-bold text-amber-900 border border-amber-100">
+                <select id="sCat" class="flex-1 bg-amber-50/30 p-4 rounded-2xl text-sm font-bold text-amber-900 border border-amber-100">
                     <option value="전체">모든 카테고리</option>
                 </select>
                 <button onclick="loadData()" class="neu-btn px-6 py-4 text-sm">조회</button>
