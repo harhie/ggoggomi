@@ -14,9 +14,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
+        /* 바탕색과 버튼색을 동일하게 세팅 (#F9F4F0) */
         :root {
             --bg-color: #F9F4F0;
-            --main-color: #78350f;
+            --main-brown: #78350f; /* 메인 갈색 */
             --shadow-dark: #e1dad4;
             --shadow-light: #ffffff;
         }
@@ -27,6 +28,7 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
+        /* 뉴모피즘 입체 버튼 스타일 (바탕색과 일치) */
         .neu-btn {
             border-radius: 15px;
             background: var(--bg-color);
@@ -35,15 +37,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--main-color);
+            color: var(--main-brown); /* 모든 글자와 아이콘은 갈색 */
             font-weight: 800;
         }
 
+        /* 버튼 클릭 시 쏙 들어가는 효과 */
         .neu-btn:active {
             box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
             transform: scale(0.98);
         }
 
+        /* 입체 카드 스타일 */
         .neu-card {
             border-radius: 20px;
             background: var(--bg-color);
@@ -122,6 +126,7 @@
                 <label class="block text-xs font-bold text-amber-700 mb-2 uppercase tracking-widest">금액</label>
                 <input type="number" id="inAmount" placeholder="0" class="w-full text-2xl font-bold text-amber-900 border-b-2 border-amber-100 pb-2 placeholder:text-amber-100">
             </div>
+            
             <button onclick="save()" id="sBtn" class="neu-btn w-full p-6 text-2xl font-black mb-10">저장하기</button>
         </div>
     </div>
