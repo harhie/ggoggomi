@@ -10,27 +10,27 @@
     <title>GGOMI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --bg: #F9F4F0; --main: #78350f; --shadow-dark: #e1dad4; --shadow-light: #ffffff; }
+        :root { --bg: #F9F4F0; --main: #78350f; --dark: #e1dad4; --light: #ffffff; }
         body { background: var(--bg); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
         /* 뉴모피즘 스타일 */
         .neu-btn { 
             border-radius: 15px; background: var(--bg) !important; 
-            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); 
+            box-shadow: 5px 5px 10px var(--dark), -5px -5px 10px var(--light); 
             color: var(--main) !important; font-weight: 800; display: flex; align-items: center; justify-content: center; 
             transition: 0.2s; border: none; outline: none;
         }
-        .neu-btn:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); transform: scale(0.98); }
+        .neu-btn:active { box-shadow: inset 3px 3px 6px var(--dark), inset -3px -3px 6px var(--light); transform: scale(0.98); }
         
         .neu-card { 
             border-radius: 20px; background: var(--bg) !important; 
-            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); 
+            box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); 
         }
 
-        /* 합계 카드 (노란 그림자 삭제, 그림자 투명도 조절) */
-        .balance-card { box-shadow: 0 10px 20px -5px rgba(120, 53, 15, 0.15); border: none; }
+        /* 합계 카드 (노란 그림자 완전 제거) */
+        .balance-card { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border: none; }
 
-        /* 내역 카드 슬라이드 삭제 */
+        /* 삭제 슬라이드 효과 */
         .card-container { position: relative; overflow: hidden; border-radius: 20px; margin-bottom: 16px; }
         .delete-btn { 
             position: absolute; right: 0; top: 0; bottom: 0; width: 70px; 
@@ -50,7 +50,7 @@
         <header class="flex justify-between items-center mb-8">
             <div class="flex items-center gap-3">
                 <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" class="w-14 h-14 rounded-2xl">
-                <h1 class="text-4xl font-black text-amber-900 tracking-tighter uppercase">GGOMI</h1>
+                <h1 class="text-4xl font-black text-amber-900 uppercase tracking-tighter">GGOMI</h1>
             </div>
             <button onclick="toggleForm(true)" class="neu-btn w-16 h-16 rounded-full text-4xl">+</button>
         </header>
@@ -63,11 +63,11 @@
         <div class="neu-card p-6 mb-8 space-y-5">
             <div class="grid grid-cols-2 gap-4">
                 <div class="border-b border-gray-200 pb-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">시작일</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">시작일</label>
                     <input type="date" id="startDate" class="text-sm font-bold text-gray-800">
                 </div>
                 <div class="border-b border-gray-200 pb-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">종료일</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">종료일</label>
                     <input type="date" id="endDate" class="text-sm font-bold text-gray-800">
                 </div>
             </div>
@@ -80,7 +80,7 @@
         </div>
 
         <div id="list" class="space-y-1">
-            <p class="text-center py-20 text-gray-300 font-bold animate-pulse">서버 연결 중...</p>
+            <p class="text-center py-20 text-gray-300 font-bold animate-pulse">데이터를 연결 중입니다...</p>
         </div>
     </div>
 
@@ -90,17 +90,17 @@
             <button onclick="toggleForm(false)" class="neu-btn w-12 h-12 rounded-full text-3xl">&times;</button>
         </div>
         <div class="space-y-8">
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-widest">날짜</label><input type="date" id="inDate" class="text-2xl font-bold text-gray-800"></div>
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-widest">구분</label><select id="inCat" class="text-2xl font-bold text-gray-800 px-4"></select></div>
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-widest">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="text-2xl font-bold text-gray-800"></div>
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-widest">금액</label><input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="text-2xl font-bold text-amber-800"></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">날짜</label><input type="date" id="inDate" class="w-full text-2xl font-bold text-gray-800"></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">구분</label><select id="inCat" class="text-2xl font-bold text-gray-800 px-4"></select></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="text-2xl font-bold text-gray-800"></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">금액</label><input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="text-2xl font-bold text-amber-800"></div>
             <button onclick="save()" id="sBtn" class="w-full p-6 text-2xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95 transition-all">저장하기</button>
         </div>
     </div>
 
     <script>
-        // 🚨 여기에 구글에서 새로 배포한 주소를 넣으세요
-        const API_URL = "https://script.google.com/macros/s/AKfycbyqhARAvdhBYQO6ILZDHBiX8-ATu9mfPHA3IJzW2y8X-SpDJvxWuZnehhCjkA3T6nUKOQ/exec";
+        // 🚨 여기에 구글에서 새로 배포한 URL을 정확히 넣으세요
+        const API_URL = "https://script.google.com/macros/s/AKfycbxQF5Sfw0GXxMjn5WOhp7MEMda7yBX7VOL9sT69p5J1a-ZmLhQL87uiq7w3knl3nlVIAA/exec";
 
         function fNum(obj) {
             let v = obj.value.replace(/,/g, "").replace(/\D/g, "");
@@ -109,17 +109,26 @@
 
         async function init() {
             document.getElementById('inDate').valueAsDate = new Date();
+            const sc = document.getElementById('sCat');
+            const ic = document.getElementById('inCat');
+            
+            // 1. 기본값 먼저 채워넣기 (서버 응답 전에도 작동하도록)
+            const fallback = ["현금", "코인", "기타"];
+            sc.innerHTML = '<option value="전체">모든 카테고리</option>';
+            fallback.forEach(c => { sc.innerHTML += `<option value="${c}">${c}</option>`; ic.innerHTML += `<option value="${c}">${c}</option>`; });
+
+            // 2. 서버에서 실시간 카테고리 로드 시도
             try {
                 const res = await fetch(`${API_URL}?action=getCat`);
                 const cats = await res.json();
-                const sc = document.getElementById('sCat');
-                const ic = document.getElementById('inCat');
-                sc.innerHTML = '<option value="전체">모든 카테고리</option>';
-                cats.forEach(c => {
-                    sc.innerHTML += `<option value="${c}">${c}</option>`;
-                    ic.innerHTML += `<option value="${c}">${c}</option>`;
-                });
-            } catch(e) { console.error("API 로드 실패"); }
+                if (cats.length > 0) {
+                    sc.innerHTML = '<option value="전체">모든 카테고리</option>';
+                    ic.innerHTML = '';
+                    cats.forEach(c => { sc.innerHTML += `<option value="${c}">${c}</option>`; ic.innerHTML += `<option value="${c}">${c}</option>`; });
+                }
+            } catch(e) { console.log("Category load failed, using fallbacks"); }
+            
+            // 3. 내역 로드
             loadData();
         }
 
@@ -136,12 +145,7 @@
                 const sum = data.reduce((acc, r) => acc + Number(r.amount), 0);
                 document.getElementById('totalAmount').innerText = sum.toLocaleString() + '원';
 
-                if (data.length === 0) {
-                    listDiv.innerHTML = '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
-                    return;
-                }
-
-                listDiv.innerHTML = data.map(r => `
+                listDiv.innerHTML = data.length ? data.map(r => `
                     <div class="card-container" onclick="this.classList.toggle('open')">
                         <div class="neu-card p-6 flex justify-between items-center relative z-10">
                             <div class="flex-1">
@@ -155,9 +159,9 @@
                         </div>
                         <div class="delete-btn" onclick="del(${r.rowIdx})">삭제</div>
                     </div>
-                `).join('');
+                `).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
             } catch(err) {
-                listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">내역 로드 실패<br>API 주소를 다시 확인하세요.</p>';
+                listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">데이터 조회 실패<br>URL과 시트 설정을 확인하세요.</p>';
             }
         }
 
@@ -170,7 +174,7 @@
         async function save() {
             const btn = document.getElementById('sBtn');
             const amt = document.getElementById('inAmount').value.replace(/,/g, "");
-            if(!amt || !document.getElementById('inItem').value) return alert("항목과 금액을 입력하세요!");
+            if(!amt || !document.getElementById('inItem').value) return alert("입력값을 확인하세요!");
             btn.innerText = "저장 중...";
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({
                 category: document.getElementById('inCat').value,
