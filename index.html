@@ -11,14 +11,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { --bg: #F9F4F0; --main: #78350f; --dark: #e1dad4; --light: #ffffff; }
-        body { background: var(--bg); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { background: var(--bg); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* 뉴모피즘 스타일 */
+        /* [중요] 뉴모피즘 그림자가 잘리지 않게 마진과 배경색을 철저히 맞춤 */
         .neu-btn { 
             border-radius: 15px; background: var(--bg) !important; 
             box-shadow: 5px 5px 10px var(--dark), -5px -5px 10px var(--light); 
             color: var(--main) !important; font-weight: 800; display: flex; align-items: center; justify-content: center; 
-            transition: 0.2s; border: none; outline: none;
+            border: none; outline: none;
         }
         .neu-btn:active { box-shadow: inset 3px 3px 6px var(--dark), inset -3px -3px 6px var(--light); transform: scale(0.98); }
         
@@ -27,18 +27,18 @@
             box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); 
         }
 
-        /* 합계 카드 (노란 그림자 완전 제거) */
-        .balance-card { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border: none; }
+        /* 합계 카드 (노란 그림자 완전 삭제, 깔끔한 섀도우) */
+        .balance-card { box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1); border: none; }
 
-        /* 삭제 슬라이드 효과 */
-        .card-container { position: relative; overflow: hidden; border-radius: 20px; margin-bottom: 16px; }
+        /* 삭제 슬라이드 (그림자가 잘리지 않도록 카드 주위에 여백 부여) */
+        .card-container { position: relative; overflow: hidden; border-radius: 20px; margin: 10px 10px 25px 10px; }
         .delete-btn { 
-            position: absolute; right: 0; top: 0; bottom: 0; width: 70px; 
+            position: absolute; right: 0; top: 0; bottom: 0; width: 75px; 
             background: #ef4444; color: white; display: flex; align-items: center; 
             justify-content: center; font-weight: bold; border-radius: 0 20px 20px 0; 
             transform: translateX(100%); transition: 0.3s; z-index: 1; 
         }
-        .card-container.open .neu-card { transform: translateX(-70px); border-radius: 20px 0 0 20px; }
+        .card-container.open .neu-card { transform: translateX(-75px); border-radius: 20px 0 0 20px; box-shadow: none; }
         .card-container.open .delete-btn { transform: translateX(0); }
 
         select { appearance: none; padding-left: 15px !important; background: transparent; outline: none; border: none; width: 100%; }
@@ -49,14 +49,14 @@
     <div class="max-w-md mx-auto">
         <header class="flex justify-between items-center mb-8">
             <div class="flex items-center gap-3">
-                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" class="w-14 h-14 rounded-2xl">
+                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" class="w-14 h-14 rounded-2xl shadow-sm">
                 <h1 class="text-4xl font-black text-amber-900 uppercase tracking-tighter">GGOMI</h1>
             </div>
             <button onclick="toggleForm(true)" class="neu-btn w-16 h-16 rounded-full text-4xl">+</button>
         </header>
 
         <div class="bg-amber-900 rounded-3xl p-7 mb-10 text-white balance-card">
-            <p id="filterTitle" class="text-amber-100 text-xs font-bold tracking-widest mb-1 opacity-80">전체 결과 합계</p>
+            <p id="filterTitle" class="text-amber-100 text-xs font-bold tracking-widest mb-1 opacity-70">전체 결과 합계</p>
             <h2 id="totalAmount" class="text-5xl font-black tracking-tight">0원</h2>
         </div>
 
@@ -80,7 +80,7 @@
         </div>
 
         <div id="list" class="space-y-1">
-            <p class="text-center py-20 text-gray-300 font-bold animate-pulse">데이터를 연결 중입니다...</p>
+            <p class="text-center py-20 text-gray-300 font-bold animate-pulse">서버와 대화 중입니다...</p>
         </div>
     </div>
 
@@ -90,7 +90,7 @@
             <button onclick="toggleForm(false)" class="neu-btn w-12 h-12 rounded-full text-3xl">&times;</button>
         </div>
         <div class="space-y-8">
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">날짜</label><input type="date" id="inDate" class="w-full text-2xl font-bold text-gray-800"></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">날짜</label><input type="date" id="inDate" class="text-2xl font-bold text-gray-800"></div>
             <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">구분</label><select id="inCat" class="text-2xl font-bold text-gray-800 px-4"></select></div>
             <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="text-2xl font-bold text-gray-800"></div>
             <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">금액</label><input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="text-2xl font-bold text-amber-800"></div>
@@ -99,8 +99,8 @@
     </div>
 
     <script>
-        // 🚨 여기에 구글에서 새로 배포한 URL을 정확히 넣으세요
-        const API_URL = "https://script.google.com/macros/s/AKfycbxQF5Sfw0GXxMjn5WOhp7MEMda7yBX7VOL9sT69p5J1a-ZmLhQL87uiq7w3knl3nlVIAA/exec";
+        // 🚨 여기에 URL 넣으세요
+        const API_URL = "https://script.google.com/macros/s/AKfycbyidCKdkNeS0NfwMOfrARbupYG69zk9JK2ZKas_Lsx84j3s-c1w0MNb3gtZKFIrPCqUgQ/exec";
 
         function fNum(obj) {
             let v = obj.value.replace(/,/g, "").replace(/\D/g, "");
@@ -112,12 +112,12 @@
             const sc = document.getElementById('sCat');
             const ic = document.getElementById('inCat');
             
-            // 1. 기본값 먼저 채워넣기 (서버 응답 전에도 작동하도록)
-            const fallback = ["현금", "코인", "기타"];
+            // 1. 서버에 가기 전에 무조건 기본값 먼저 뿌려버리기
+            const def = ["현금", "코인", "아버지", "기타"];
             sc.innerHTML = '<option value="전체">모든 카테고리</option>';
-            fallback.forEach(c => { sc.innerHTML += `<option value="${c}">${c}</option>`; ic.innerHTML += `<option value="${c}">${c}</option>`; });
+            def.forEach(c => { sc.innerHTML += `<option value="${c}">${c}</option>`; ic.innerHTML += `<option value="${c}">${c}</option>`; });
 
-            // 2. 서버에서 실시간 카테고리 로드 시도
+            // 2. 서버 연결 시도
             try {
                 const res = await fetch(`${API_URL}?action=getCat`);
                 const cats = await res.json();
@@ -126,9 +126,8 @@
                     ic.innerHTML = '';
                     cats.forEach(c => { sc.innerHTML += `<option value="${c}">${c}</option>`; ic.innerHTML += `<option value="${c}">${c}</option>`; });
                 }
-            } catch(e) { console.log("Category load failed, using fallbacks"); }
+            } catch(e) { console.log("Category load from server failed"); }
             
-            // 3. 내역 로드
             loadData();
         }
 
@@ -161,12 +160,12 @@
                     </div>
                 `).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
             } catch(err) {
-                listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">데이터 조회 실패<br>URL과 시트 설정을 확인하세요.</p>';
+                listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">조회 실패</p>';
             }
         }
 
         async function del(idx) {
-            if(!confirm("삭제하시겠습니까?")) return;
+            if(!confirm("이 내역을 삭제할까요?")) return;
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIdx: idx }) });
             loadData();
         }
