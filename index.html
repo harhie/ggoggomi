@@ -10,51 +10,66 @@
     <title>GGOMI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --bg: #F9F4F0; --brown: #78350f; --dark: #e1dad4; --light: #ffffff; }
+        :root { --bg: #F9F4F0; --main: #78350f; --dark: #e1dad4; --light: #ffffff; }
         body { background: var(--bg); font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        .neu-btn { border-radius: 15px; background: var(--bg); box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); color: var(--brown); font-weight: 800; display: flex; align-items: center; justify-content: center; transition: 0.2s; border:none; }
+        
+        /* 뉴모피즘 입체 스타일 */
+        .neu-btn { 
+            border-radius: 15px; background: var(--bg) !important; 
+            box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); 
+            color: var(--main); font-weight: 800; display: flex; align-items: center; justify-content: center; 
+            transition: 0.2s; border: none; 
+        }
         .neu-btn:active { box-shadow: inset 4px 4px 8px var(--dark), inset -4px -4px 8px var(--light); transform: scale(0.98); }
-        .neu-card { border-radius: 20px; background: var(--bg); box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); transition: transform 0.3s ease; }
-        .balance-card { box-shadow: 0 10px 30px -5px rgba(120, 53, 15, 0.2); }
+        
+        .neu-card { 
+            border-radius: 20px; background: var(--bg) !important; 
+            box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); 
+        }
+
         /* 삭제 슬라이드 애니메이션 */
         .card-container { position: relative; overflow: hidden; border-radius: 20px; margin-bottom: 20px; }
-        .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 0 20px 20px 0; transform: translateX(100%); transition: 0.3s; z-index: 1; }
+        .delete-btn { 
+            position: absolute; right: 0; top: 0; bottom: 0; width: 80px; 
+            background: #ef4444; color: white; display: flex; align-items: center; 
+            justify-content: center; font-weight: bold; border-radius: 0 20px 20px 0; 
+            transform: translateX(100%); transition: 0.3s; z-index: 1; 
+        }
         .card-container.open .neu-card { transform: translateX(-80px); border-radius: 20px 0 0 20px; }
         .card-container.open .delete-btn { transform: translateX(0); }
-        select { appearance: none; padding-left: 12px !important; background: transparent; outline: none; }
-        input { background: transparent; outline: none; }
+
+        select { appearance: none; padding-left: 15px !important; background: transparent; outline: none; }
+        input { background: transparent; outline: none; padding-left: 5px; }
     </style>
 </head>
 <body class="p-6">
     <div class="max-w-md mx-auto">
         <header class="flex justify-between items-center mb-8">
             <div class="flex items-center gap-3">
-                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" class="w-14 h-14 rounded-2xl">
+                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" class="w-14 h-14 rounded-2xl shadow-sm">
                 <h1 class="text-4xl font-black text-amber-900 uppercase">GGOMI</h1>
             </div>
             <button onclick="toggleForm(true)" class="neu-btn w-16 h-16 rounded-full text-4xl">+</button>
         </header>
 
-        <div class="bg-amber-900 rounded-3xl p-7 mb-10 text-white balance-card">
-            <p id="filterTitle" class="text-amber-200 text-xs font-bold tracking-widest mb-1">전체 합계</p>
+        <div class="bg-amber-900 rounded-3xl p-7 mb-10 text-white shadow-xl shadow-amber-200">
+            <p id="filterTitle" class="text-amber-200 text-xs font-bold tracking-widest mb-1">전체 결과 합계</p>
             <h2 id="totalAmount" class="text-5xl font-black tracking-tight">0원</h2>
         </div>
 
         <div class="neu-card p-6 mb-8 space-y-5">
             <div class="grid grid-cols-2 gap-4">
                 <div class="border-b border-gray-200 pb-1">
-                    <label class="text-[10px] font-bold text-gray-400">시작일</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">시작일</label>
                     <input type="date" id="startDate" class="w-full text-sm font-bold text-gray-800">
                 </div>
                 <div class="border-b border-gray-200 pb-1">
-                    <label class="text-[10px] font-bold text-gray-400">종료일</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">종료일</label>
                     <input type="date" id="endDate" class="w-full text-sm font-bold text-gray-800">
                 </div>
             </div>
             <div class="flex gap-3">
-                <select id="sCat" class="flex-1 bg-gray-100/50 p-4 rounded-2xl text-sm font-bold text-gray-800 px-5">
-                    <option value="전체">모든 카테고리</option>
-                </select>
+                <select id="sCat" class="flex-1 bg-gray-100/50 p-4 rounded-2xl text-sm font-bold text-gray-800"></select>
                 <button onclick="loadData()" class="neu-btn px-6 py-4 text-sm font-bold">조회</button>
             </div>
         </div>
@@ -68,42 +83,50 @@
             <button onclick="toggleForm(false)" class="neu-btn w-12 h-12 rounded-full text-3xl">&times;</button>
         </div>
         <div class="space-y-8">
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2">날짜</label><input type="date" id="inDate" class="w-full text-2xl font-bold text-gray-800"></div>
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2">구분</label><select id="inCat" class="w-full text-2xl font-bold text-gray-800 px-2"></select></div>
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="w-full text-2xl font-bold text-gray-800"></div>
-            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2">금액</label><input type="text" id="inAmount" inputmode="numeric" oninput="formatNumber(this)" placeholder="0" class="w-full text-2xl font-bold text-amber-900"></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">날짜</label><input type="date" id="inDate" class="w-full text-2xl font-bold text-gray-800 border-b border-gray-100"></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">구분</label><select id="inCat" class="w-full text-2xl font-bold text-gray-800 border-b border-gray-100"></select></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="w-full text-2xl font-bold text-gray-800 border-b border-gray-100"></div>
+            <div class="neu-card p-6"><label class="text-xs font-bold text-gray-400 block mb-2 uppercase">금액</label><input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="w-full text-2xl font-bold text-amber-900 border-b border-gray-100"></div>
             <button onclick="save()" id="sBtn" class="w-full p-6 text-2xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95">저장하기</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "여기에_새_URL_넣으세요";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxwr80aDxxazRr7XuO9srI47wtBWK98k8v7AWIjm9AgCiz-O_bxbbQEx9zhaV0hDv0LyQ/exec
 
-        function formatNumber(obj) {
-            let val = obj.value.replace(/,/g, "").replace(/\D/g, "");
-            obj.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+";
+
+        function fNum(obj) {
+            let v = obj.value.replace(/,/g, "").replace(/\D/g, "");
+            obj.value = v.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
         async function init() {
             document.getElementById('inDate').valueAsDate = new Date();
+            // 1. 카테고리 로드
             const res = await fetch(`${API_URL}?action=getCat`);
             const cats = await res.json();
+            
+            const sc = document.getElementById('sCat');
+            const ic = document.getElementById('inCat');
+            sc.innerHTML = '<option value="전체">모든 카테고리</option>';
             cats.forEach(c => {
-                document.getElementById('sCat').innerHTML += `<option value="${c}">${c}</option>`;
-                document.getElementById('inCat').innerHTML += `<option value="${c}">${c}</option>`;
+                sc.innerHTML += `<option value="${c}">${c}</option>`;
+                ic.innerHTML += `<option value="${c}">${c}</option>`;
             });
             loadData();
         }
 
         async function loadData() {
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
-            const cat = document.getElementById('sCat').value;
-            const res = await fetch(`${API_URL}?start=${start}&end=${end}&cat=${encodeURIComponent(cat)}`);
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            const c = document.getElementById('sCat').value;
+            const res = await fetch(`${API_URL}?start=${s}&end=${e}&cat=${encodeURIComponent(c)}`);
             const data = await res.json();
             
             const sum = data.reduce((acc, r) => acc + Number(r.amount), 0);
             document.getElementById('totalAmount').innerText = sum.toLocaleString() + '원';
+            document.getElementById('filterTitle').innerText = `${c} 검색 결과 합계`;
 
             document.getElementById('list').innerHTML = data.map(r => `
                 <div class="card-container" onclick="this.classList.toggle('open')">
@@ -117,14 +140,14 @@
                         </div>
                         <div class="text-2xl font-black text-amber-800">${Number(r.amount).toLocaleString()}원</div>
                     </div>
-                    <div class="delete-btn" onclick="deleteRow(${r.rowIdx})">삭제</div>
+                    <div class="delete-btn" onclick="del(${r.rowIdx})">삭제</div>
                 </div>
             `).join('') || '<p class="text-center py-20 text-gray-300">내역이 없습니다.</p>';
         }
 
-        async function deleteRow(rowIdx) {
-            if(!confirm("삭제하시겠습니까?")) return;
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIdx: rowIdx }) });
+        async function del(idx) {
+            if(!confirm("이 내역을 삭제할까요?")) return;
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIdx: idx }) });
             loadData();
         }
 
@@ -136,6 +159,7 @@
                 item: document.getElementById('inItem').value,
                 amount: document.getElementById('inAmount').value.replace(/,/g, "")
             };
+            if(!payload.item || !payload.amount) return alert("입력값을 확인하세요!");
             btn.innerText = "저장 중...";
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
             location.reload();
