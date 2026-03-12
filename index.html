@@ -24,7 +24,7 @@
         .card-container.open .btn-group { opacity: 1; }
         select, input { background: transparent; outline: none; border: none; width: 100%; }
         select { appearance: none; padding-left: 15px !important; }
-        .loading-text { font-size: 11px; color: #ef4444; font-weight: bold; animation: pulse 1s infinite; }
+        .loading-text { font-size: 11px; color: #78350f; font-weight: bold; animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
@@ -70,44 +70,50 @@
             </div>
             
             <div class="neu-card p-5">
-                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW) <span id="coinLoading" class="hidden loading-text ml-2">시세 확인 중...</span></label>
+                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW) <span id="coinLoading" class="hidden loading-text ml-2">업비트 시세 확인 중...</span></label>
                 <input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="w-full text-xl font-bold text-amber-800">
             </div>
             
-            <button onclick="save()" id="sBtn" class="w-full p-5 text-xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95 transition-all">저장하기</button>
+            <button onclick="save()" id="sBtn" class="w-full p-5 text-xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95">저장하기</button>
         </div>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwyl6snoUZNwDK9W8lHpJHWOH-2iJZeh1PP0FsiKUo830CAFrAx_GfopDlWmRyPYf2f_A/exec";
+        let lastData = [];
         let unitPrice = 0;
-        const COIN_MAP = { "코인-BTC": "bitcoin", "코인-ETH": "ethereum", "코인-USDT": "tether" };
+        
+        // 업비트 마켓 코드 매핑
+        const COIN_MAP = { "코인-BTC": "KRW-BTC", "코인-ETH": "KRW-ETH", "코인-USDT": "KRW-USDT" };
 
         async function checkPrice() {
             const cat = document.getElementById('inCat').value;
-            const date = document.getElementById('inDate').value;
-            const coinId = COIN_MAP[cat];
+            const date = document.getElementById('inDate').value; // yyyy-mm-dd
+            const market = COIN_MAP[cat];
             const qtyBox = document.getElementById('qtyBox');
             
-            if (!coinId) { qtyBox.style.opacity = "0.4"; unitPrice = 0; return; }
+            if (!market) { qtyBox.style.opacity = "0.4"; unitPrice = 0; return; }
             
             qtyBox.style.opacity = "1";
             document.getElementById('coinLoading').classList.remove('hidden');
 
             try {
-                const [y, m, d] = date.split('-');
-                // dd-mm-yyyy 포맷으로 전송
-                const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/history?date=${d}-${m}-${y}&localization=false`);
+                // 업비트 일봉 API는 'to' 파라미터로 해당 시점 이전 데이터를 가져옴
+                // 당일 종가를 가져오기 위해 다음날 00시를 기준으로 조회
+                const nextDay = new Date(date);
+                nextDay.setDate(nextDay.getDate() + 1);
+                const toDate = nextDay.toISOString().split('T')[0] + "T00:00:00Z";
+
+                const res = await fetch(`https://api.upbit.com/v1/candles/days?market=${market}&to=${toDate}&count=1`);
                 const data = await res.json();
                 
-                if (data.market_data && data.market_data.current_price) {
-                    unitPrice = data.market_data.current_price.krw;
+                if (data && data.length > 0) {
+                    unitPrice = data[0].trade_price; // trade_price가 해당 날짜의 종가입니다.
                     calcTotal(); 
                 } else {
-                    alert("해당 날짜의 시세 데이터가 없습니다.");
                     unitPrice = 0;
                 }
-            } catch (err) { alert("시세 로드 실패. 잠시 후 다시 시도하세요."); }
+            } catch (err) { console.error("업비트 시세 로드 실패", err); }
             finally { document.getElementById('coinLoading').classList.add('hidden'); }
         }
 
@@ -140,9 +146,9 @@
             const listDiv = document.getElementById('list'), s = document.getElementById('startDate').value, e = document.getElementById('endDate').value, c = document.getElementById('sCat').value;
             try {
                 const res = await fetch(`${API_URL}?start=${s}&end=${e}&cat=${encodeURIComponent(c || '전체')}`);
-                const data = await res.json();
-                document.getElementById('totalAmount').innerText = data.reduce((acc, r) => acc + Number(r.amount), 0).toLocaleString() + '원';
-                listDiv.innerHTML = data.length ? data.map((r, idx) => `
+                lastData = await res.json();
+                document.getElementById('totalAmount').innerText = lastData.reduce((acc, r) => acc + Number(r.amount), 0).toLocaleString() + '원';
+                listDiv.innerHTML = lastData.length ? lastData.map((r, idx) => `
                     <div class="card-container" onclick="this.classList.toggle('open')">
                         <div class="btn-group">
                             <div class="action-btn edit-btn" onclick="openEditForm('${idx}'); event.stopPropagation();">수정</div>
@@ -156,24 +162,12 @@
                             <div class="text-lg font-black text-amber-800 ml-3 whitespace-nowrap">${Number(r.amount).toLocaleString()}원</div>
                         </div>
                     </div>`).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
-                // currentData를 전역 변수 대신 이 안에서 관리하거나 data를 매개변수로 전달하도록 수정
-                window.lastData = data; 
             } catch(err) { listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">조회 실패</p>'; }
         }
 
-        function openAddForm() { 
-            document.getElementById('modalTitle').innerText = "기록하기"; 
-            document.getElementById('editRowIdx').value = ""; 
-            document.getElementById('inItem').value = ""; 
-            document.getElementById('inAmount').value = ""; 
-            document.getElementById('inQty').value = ""; 
-            unitPrice = 0; 
-            document.getElementById('inDate').valueAsDate = new Date(); 
-            toggleForm(true); 
-        }
-
+        function openAddForm() { document.getElementById('modalTitle').innerText = "기록하기"; document.getElementById('editRowIdx').value = ""; document.getElementById('inItem').value = ""; document.getElementById('inAmount').value = ""; document.getElementById('inQty').value = ""; unitPrice = 0; document.getElementById('inDate').valueAsDate = new Date(); toggleForm(true); }
         function openEditForm(idx) { 
-            const r = window.lastData[idx]; 
+            const r = lastData[idx]; 
             document.getElementById('modalTitle').innerText = "수정하기"; 
             document.getElementById('editRowIdx').value = r.rowIdx; 
             document.getElementById('inDate').value = new Date(r.date).toISOString().split('T')[0]; 
@@ -183,15 +177,7 @@
             document.getElementById('inQty').value = "";
             toggleForm(true); 
         }
-
-        async function save() { 
-            const btn = document.getElementById('sBtn'), amt = document.getElementById('inAmount').value.replace(/,/g, ""), rowIdx = document.getElementById('editRowIdx').value; 
-            if(!amt || !document.getElementById('inItem').value) return alert("내용을 입력하세요!"); 
-            btn.innerText = "저장 중..."; 
-            const action = rowIdx ? 'update' : 'add'; 
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: action, rowIdx: rowIdx, category: document.getElementById('inCat').value, item: document.getElementById('inItem').value, amount: amt, date: document.getElementById('inDate').value })}); 
-            location.reload(); 
-        }
+        async function save() { const btn = document.getElementById('sBtn'), amt = document.getElementById('inAmount').value.replace(/,/g, ""), rowIdx = document.getElementById('editRowIdx').value; if(!amt || !document.getElementById('inItem').value) return alert("내용을 입력하세요!"); btn.innerText = "저장 중..."; const action = rowIdx ? 'update' : 'add'; await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: action, rowIdx: rowIdx, category: document.getElementById('inCat').value, item: document.getElementById('inItem').value, amount: amt, date: document.getElementById('inDate').value })}); location.reload(); }
         async function del(idx) { if(!confirm("삭제하시겠습니까?")) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIdx: idx }) }); location.reload(); }
         function toggleForm(s) { document.getElementById('modal').classList.toggle('hidden', !s); }
         init();
