@@ -8,16 +8,16 @@
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GGomi">
+    <meta name="apple-mobile-web-app-title" content="GGOMI">
     
-    <title>GGomi 가계부</title>
+    <title>GGOMI 가계부</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
         :root {
             --bg-color: #F9F4F0;
-            --main-gray: #4b5563; /* 회색 텍스트용 (gray-600) */
-            --dark-gray: #1f2937; /* 진한 회색 (gray-800) */
+            --main-brown: #78350f; /* 메인 갈색 (Amber-900) */
+            --sub-gray: #6b7280;   /* 서브 회색 */
             --shadow-dark: #e1dad4;
             --shadow-light: #ffffff;
         }
@@ -28,7 +28,7 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* 뉴모피즘 버튼 스타일 (아이콘/글자 회색으로 변경) */
+        /* 뉴모피즘 버튼 (텍스트 갈색으로 변경) */
         .neu-btn {
             border-radius: 15px;
             background: var(--bg-color) !important;
@@ -37,7 +37,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--main-gray); /* 버튼 내부 기호 회색 */
+            color: var(--main-brown) !important; /* +, 조회, 저장 버튼 텍스트 갈색 */
             font-weight: 800;
             border: none;
         }
@@ -55,21 +55,29 @@
             margin-bottom: 20px;
         }
 
-        /* 상단 합계 카드는 요청대로 노란색/갈색 포인트 유지 */
         .balance-card { 
             box-shadow: 0 10px 30px -5px rgba(120, 53, 15, 0.2); 
         }
 
         #modal::-webkit-scrollbar { display: none; }
-        input, select { background: transparent; outline: none; }
+        
+        /* 선택창 글자 잘림 방지 및 스타일 */
+        select {
+            appearance: none;
+            padding-left: 10px !important; /* 왼쪽 잘림 방지 */
+            background: transparent;
+            outline: none;
+        }
+
+        input { background: transparent; outline: none; }
     </style>
 </head>
 <body class="p-6">
     <div class="max-w-md mx-auto">
         <header class="flex justify-between items-center mb-8">
             <div class="flex items-center gap-3">
-                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" alt="GGomi Logo" class="w-14 h-14 rounded-2xl shadow-sm">
-                <h1 class="text-4xl font-black text-gray-800 tracking-tighter">GGomi</h1>
+                <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" alt="GGOMI Logo" class="w-14 h-14 rounded-2xl shadow-sm">
+                <h1 class="text-4xl font-black text-amber-900 tracking-tighter uppercase">GGOMI</h1>
             </div>
             <button onclick="toggleForm(true)" class="neu-btn w-16 h-16 rounded-full text-4xl">+</button>
         </header>
@@ -82,16 +90,16 @@
         <div class="neu-card space-y-5">
             <div class="grid grid-cols-2 gap-4">
                 <div class="border-b border-gray-200 pb-1">
-                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">시작일</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">시작일</label>
                     <input type="date" id="startDate" class="w-full text-sm font-bold text-gray-800">
                 </div>
                 <div class="border-b border-gray-200 pb-1">
-                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">종료일</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">종료일</label>
                     <input type="date" id="endDate" class="w-full text-sm font-bold text-gray-800">
                 </div>
             </div>
             <div class="flex gap-3">
-                <select id="sCat" class="flex-1 bg-gray-100/50 p-4 rounded-2xl text-sm font-bold text-gray-800">
+                <select id="sCat" class="flex-1 bg-gray-100/50 p-4 rounded-2xl text-sm font-bold text-gray-800 px-5">
                     <option value="전체">모든 카테고리</option>
                 </select>
                 <button onclick="loadData()" class="neu-btn px-6 py-4 text-sm font-bold">조회</button>
@@ -105,26 +113,26 @@
 
     <div id="modal" class="hidden fixed inset-0 z-50 p-8 overflow-y-auto" style="background: var(--bg-color);">
         <div class="flex justify-between items-center mb-12">
-            <h2 class="text-3xl font-black text-gray-800">내역 기록</h2>
+            <h2 class="text-3xl font-black text-amber-900">기록하기</h2>
             <button onclick="toggleForm(false)" class="neu-btn w-12 h-12 rounded-full text-3xl">&times;</button>
         </div>
         
         <div class="space-y-10">
             <div class="neu-card !p-6">
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">날짜</label>
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">날짜</label>
                 <input type="date" id="inDate" class="w-full text-2xl font-bold text-gray-800 border-b-2 border-gray-100 pb-2">
             </div>
             <div class="neu-card !p-6">
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">구분</label>
-                <select id="inCat" class="w-full text-2xl font-bold text-gray-800 border-b-2 border-gray-100 pb-2"></select>
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">구분</label>
+                <select id="inCat" class="w-full text-2xl font-bold text-gray-800 border-b-2 border-gray-100 pb-2 px-2"></select>
             </div>
             <div class="neu-card !p-6">
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">항목</label>
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">항목</label>
                 <input type="text" id="inItem" placeholder="내용 입력" class="w-full text-2xl font-bold text-gray-800 border-b-2 border-gray-100 pb-2 placeholder:text-gray-200">
             </div>
             <div class="neu-card !p-6">
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">금액</label>
-                <input type="number" id="inAmount" placeholder="0" class="w-full text-2xl font-bold text-gray-800 border-b-2 border-gray-100 pb-2 placeholder:text-gray-200">
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">금액</label>
+                <input type="text" id="inAmount" inputmode="numeric" oninput="formatNumber(this)" placeholder="0" class="w-full text-2xl font-bold text-amber-900 border-b-2 border-gray-100 pb-2 placeholder:text-gray-200">
             </div>
             <button onclick="save()" id="sBtn" class="neu-btn w-full p-6 text-2xl font-black mb-10">저장하기</button>
         </div>
@@ -132,6 +140,12 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyZTJToAWOXv1Rq4nClb8fPwz1vnh1kHjGjUh6lC379XEAcOofg6fqBPT4bxqBD-Ny0Tg/exec";
+
+        // 입력 시 천 단위 콤마 추가하는 함수
+        function formatNumber(obj) {
+            let val = obj.value.replace(/,/g, "").replace(/\D/g, "");
+            obj.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
 
         async function init() {
             document.getElementById('inDate').valueAsDate = new Date();
@@ -175,7 +189,7 @@
                             <div class="text-2xl font-bold text-gray-800 leading-tight">${row[2]}</div>
                         </div>
                         <div class="text-right ml-4">
-                            <div class="text-2xl font-black text-gray-700">${Number(row[3]).toLocaleString()}원</div>
+                            <div class="text-2xl font-black text-amber-800">${Number(row[3]).toLocaleString()}원</div>
                         </div>
                     </div>
                 `).join('') : '<p class="text-center py-20 text-gray-400 font-bold">내역이 없습니다.</p>';
@@ -186,11 +200,12 @@
 
         async function save() {
             const btn = document.getElementById('sBtn');
+            const amountStr = document.getElementById('inAmount').value.replace(/,/g, "");
             const payload = {
                 date: document.getElementById('inDate').value,
                 category: document.getElementById('inCat').value,
                 item: document.getElementById('inItem').value,
-                amount: document.getElementById('inAmount').value
+                amount: amountStr
             };
             if(!payload.item || !payload.amount) return alert('항목과 금액을 입력하세요.');
             
