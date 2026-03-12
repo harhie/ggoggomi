@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GGomi 가계부</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-5">
+  <div class="max-w-md mx-auto">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-4xl font-black text-indigo-600">GGomi</h1>
+      <button onclick="toggleForm(true)" class="bg-indigo-600 text-white w-16 h-16 rounded-full text-4xl shadow-2xl">+</button>
+    </header>
+    <div id="list" class="space-y-4 text-lg">
+      <p class="text-center text-gray-400 py-20">데이터를 가져오는 중...</p>
+    </div>
+  </div>
+
+  <div id="modal" class="hidden fixed inset-0 bg-white z-50 p-8 overflow-y-auto">
+    <div class="flex justify-between items-center mb-10">
+      <h2 class="text-3xl font-bold text-gray-800">내역 기록</h2>
+      <button onclick="toggleForm(false)" class="text-gray-400 text-5xl">&times;</button>
+    </div>
+    <div class="space-y-8">
+      <div><label class="block text-lg font-bold text-gray-500 mb-2">날짜</label>
+      <input type="date" id="inDate" class="w-full border-b-4 border-gray-100 p-4 text-2xl outline-none focus:border-indigo-500"></div>
+      <div><label class="block text-lg font-bold text-gray-500 mb-2">구분</label>
+      <select id="inCat" class="w-full border-b-4 border-gray-100 p-4 text-2xl outline-none"></select></div>
+      <div><label class="block text-lg font-bold text-gray-500 mb-2">항목</label>
+      <input type="text" id="inItem" class="w-full border-b-4 border-gray-100 p-4 text-2xl outline-none" placeholder="항목 입력"></div>
+      <div><label class="block text-lg font-bold text-gray-500 mb-2">금액</label>
+      <input type="number" id="inAmount" class="w-full border-b-4 border-gray-100 p-4 text-2xl outline-none" placeholder="0"></div>
+      <button onclick="save()" id="saveBtn" class="w-full bg-indigo-600 text-white p-6 rounded-2xl text-2xl font-bold shadow-2xl">저장하기</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzuRvhRewPQH1NL7CU3Q45WGB4XKqyXK8f9P98ysHkDvKDu3vDYbGEYqZ9jez8y7L7H6A/exec
+"; // <-- 여기 수정!!
+
+    async function loadData() {
+      const res = await fetch(`${API_URL}?action=get`);
+      const data = await res.json();
+      document.getElementById('list').innerHTML = data.map(row => `
+        <div class="bg-white p-6 rounded-3xl shadow-sm flex justify-between items-center mb-2">
+          <div><div class="text-2xl font-bold mb-1">${row[2]}</div><div class="text-sm text-gray-400">${row[1]} | ${new Date(row[0]).toLocaleDateString()}</div></div>
+          <div class="text-right"><div class="text-2xl font-black text-indigo-600">${Number(row[3]).toLocaleString()}원</div><div class="text-xs text-gray-300">잔액: ${Number(row[4]).toLocaleString()}</div></div>
+        </div>
+      `).join('');
+    }
+
+    async function save() {
+      const btn = document.getElementById('saveBtn');
+      btn.innerText = "저장 중..."; btn.disabled = true;
+      const payload = {
+        date: document.getElementById('inDate').value,
+        category: document.getElementById('inCat').value,
+        item: document.getElementById('inItem').value,
+        amount: document.getElementById('inAmount').value
+      };
+      await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      toggleForm(false); loadData();
+      btn.innerText = "저장하기"; btn.disabled = false;
+    }
+
+    function toggleForm(show) { document.getElementById('modal').classList.toggle('hidden', !show); }
+
+    window.onload = async () => {
+      document.getElementById('inDate').valueAsDate = new Date();
+      const res = await fetch(`${API_URL}?action=getCat`);
+      const cats = await res.json();
+      document.getElementById('inCat').innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      loadData();
+    };
+  </script>
+</body>
+</html>
