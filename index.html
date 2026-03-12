@@ -8,23 +8,21 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>GGOMI</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg: #F9F4F0; --main: #78350f; --dark: #e1dad4; --light: #ffffff; }
         body { background: var(--bg); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         .neu-btn { border-radius: 15px; background: var(--bg) !important; box-shadow: 5px 5px 10px var(--dark), -5px -5px 10px var(--light); color: var(--main) !important; font-weight: 800; display: flex; align-items: center; justify-content: center; border: none; outline: none; transition: 0.2s; }
         .neu-btn:active { box-shadow: inset 3px 3px 6px var(--dark), inset -3px -3px 6px var(--light); transform: scale(0.98); }
-        .neu-card { border-radius: 20px; background: var(--bg) !important; box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        .neu-card { border-radius: 20px; background: var(--bg) !important; box-shadow: 6px 6px 12px var(--dark), -6px -6px 12px var(--light); transition: 0.3s; }
         .balance-card { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border: none; }
-        
         .card-container { position: relative; margin-bottom: 25px; padding: 5px; }
         .btn-group { position: absolute; right: 10px; top: 15px; bottom: 15px; display: flex; gap: 10px; z-index: 0; opacity: 0; transition: 0.2s; }
         .action-btn { width: 75px; height: 100%; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: white; }
         .edit-btn { background: var(--main); }
         .del-btn { background: #ef4444; }
-        
         .card-container.open .neu-card { transform: translateX(-180px); box-shadow: none; }
         .card-container.open .btn-group { opacity: 1; }
-
         select, input { background: transparent; outline: none; border: none; width: 100%; }
         select { appearance: none; padding-left: 15px !important; }
     </style>
@@ -36,7 +34,10 @@
                 <img src="https://raw.githubusercontent.com/harhie/siteimage/main/ggo.png" class="w-14 h-14 rounded-2xl shadow-sm">
                 <h1 class="text-4xl font-black text-amber-900 uppercase tracking-tighter">GGOMI</h1>
             </div>
-            <button onclick="openAddForm()" class="neu-btn w-16 h-16 rounded-full text-4xl">+</button>
+            <div class="flex gap-4">
+                <button onclick="openStats()" class="neu-btn w-14 h-14 rounded-full">📊</button>
+                <button onclick="openAddForm()" class="neu-btn w-14 h-14 rounded-full text-3xl">+</button>
+            </div>
         </header>
 
         <div class="bg-amber-900 rounded-3xl p-7 mb-10 text-white balance-card">
@@ -57,6 +58,23 @@
         <div id="list" class="space-y-1"></div>
     </div>
 
+    <div id="statsModal" class="hidden fixed inset-0 z-50 p-6 overflow-y-auto" style="background: var(--bg);">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-black text-amber-900">자산 리포트</h2>
+            <button onclick="toggleStats(false)" class="neu-btn w-12 h-12 rounded-full text-2xl">&times;</button>
+        </div>
+        <div class="space-y-8 pb-10">
+            <div class="neu-card p-6">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest text-center">카테고리별 비중</p>
+                <canvas id="categoryChart" width="100" height="100"></canvas>
+            </div>
+            <div class="neu-card p-6">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest text-center">최근 지출 흐름</p>
+                <canvas id="trendChart" width="100" height="60"></canvas>
+            </div>
+        </div>
+    </div>
+
     <div id="modal" class="hidden fixed inset-0 z-50 p-8 overflow-y-auto" style="background: var(--bg);">
         <div class="flex justify-between items-center mb-10">
             <h2 id="modalTitle" class="text-3xl font-black text-amber-900">기록하기</h2>
@@ -66,37 +84,26 @@
             <input type="hidden" id="editRowIdx">
             <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">날짜</label><input type="date" id="inDate" class="w-full text-xl font-bold text-gray-800"></div>
             <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">구분</label><select id="inCat" onchange="toggleQty()" class="text-xl font-bold text-gray-800 px-2"></select></div>
-            
             <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">항목</label><input type="text" id="inItem" placeholder="내용 입력" class="w-full text-xl font-bold text-gray-800"></div>
-
             <div id="qtyBox" class="hidden neu-card p-5">
                 <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">수량 (개수)</label>
                 <input type="number" id="inQty" step="any" inputmode="decimal" placeholder="0.00" class="w-full text-xl font-bold text-gray-800">
             </div>
-            
-            <div class="neu-card p-5">
-                <label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW)</label>
-                <input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="w-full text-xl font-bold text-amber-800">
-            </div>
-            
+            <div class="neu-card p-5"><label class="text-xs font-bold text-gray-400 block mb-1 uppercase">금액(KRW)</label><input type="text" id="inAmount" inputmode="numeric" oninput="fNum(this)" placeholder="0" class="w-full text-xl font-bold text-amber-800"></div>
             <button onclick="save()" id="sBtn" class="w-full p-5 text-xl font-black bg-amber-900 text-white rounded-3xl shadow-xl active:scale-95 transition-all">저장하기</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbw5kc2eGFoFE46ahqZ8E2NWFk1Y1mAIPo0FwBcP5AteRSwwRtcBuf38e4jb9NHT-a6jxg/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxrwuou9TbksLsdVw9fXcDsdg_zojk68SUODRjq2ZFO9n-UVYvw042ewWFlX8A8ZpRZTQ/exec";
         let lastData = [];
+        let catChart, trendChart;
 
-        // 구분 변경 시 수량 칸 노출 여부 결정
         function toggleQty() {
             const cat = document.getElementById('inCat').value;
             const qtyBox = document.getElementById('qtyBox');
-            if (cat.includes("코인")) {
-                qtyBox.classList.remove('hidden');
-            } else {
-                qtyBox.classList.add('hidden');
-                document.getElementById('inQty').value = "";
-            }
+            if (cat.includes("코인")) { qtyBox.classList.remove('hidden'); } 
+            else { qtyBox.classList.add('hidden'); document.getElementById('inQty').value = ""; }
         }
 
         function fNum(obj) {
@@ -111,10 +118,7 @@
                 const res = await fetch(`${API_URL}?action=getCat`), cats = await res.json();
                 sc.innerHTML = '<option value="전체">모든 카테고리</option>';
                 ic.innerHTML = '';
-                cats.forEach(c => {
-                    sc.innerHTML += `<option value="${c}">${c}</option>`;
-                    ic.innerHTML += `<option value="${c}">${c}</option>`;
-                });
+                cats.forEach(c => { sc.innerHTML += `<option value="${c}">${c}</option>`; ic.innerHTML += `<option value="${c}">${c}</option>`; });
             } catch(e) {}
             loadData();
         }
@@ -133,10 +137,7 @@
                         </div>
                         <div class="neu-card p-4 flex justify-between items-center relative z-10">
                             <div class="flex-1 overflow-hidden">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-[9px] font-black text-gray-400 uppercase">${r.category}</span>
-                                    <span class="text-[9px] font-bold text-gray-300">${new Date(r.date).toLocaleDateString()}</span>
-                                </div>
+                                <div class="flex items-center gap-2 mb-1"><span class="text-[9px] font-black text-gray-400 uppercase">${r.category}</span><span class="text-[9px] font-bold text-gray-300">${new Date(r.date).toLocaleDateString()}</span></div>
                                 <div class="text-sm font-bold text-gray-800 truncate">${r.item} ${r.qty ? '('+r.qty+')' : ''}</div>
                             </div>
                             <div class="text-base font-black text-amber-800 ml-3 whitespace-nowrap">${Number(r.amount).toLocaleString()}원</div>
@@ -145,17 +146,58 @@
             } catch(err) { listDiv.innerHTML = '<p class="text-center py-20 text-red-400 font-bold">조회 실패</p>'; }
         }
 
-        function openAddForm() { 
-            document.getElementById('modalTitle').innerText = "기록하기"; 
-            document.getElementById('editRowIdx').value = ""; 
-            document.getElementById('inItem').value = ""; 
-            document.getElementById('inAmount').value = ""; 
-            document.getElementById('inQty').value = ""; 
-            document.getElementById('inDate').valueAsDate = new Date(); 
-            toggleQty();
-            toggleForm(true); 
+        // 통계 모달 열기 및 차트 그리기
+        function openStats() {
+            toggleStats(true);
+            renderCharts();
         }
 
+        function renderCharts() {
+            if (catChart) catChart.destroy();
+            if (trendChart) trendChart.destroy();
+
+            // 1. 카테고리별 합계 계산
+            const catSums = {};
+            lastData.forEach(r => { catSums[r.category] = (catSums[r.category] || 0) + Number(r.amount); });
+
+            catChart = new Chart(document.getElementById('categoryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(catSums),
+                    datasets: [{
+                        data: Object.values(catSums),
+                        backgroundColor: ['#78350f', '#d97706', '#fbbf24', '#fef3c7', '#a16207'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { plugins: { legend: { position: 'bottom', labels: { font: { weight: 'bold' } } } } }
+            });
+
+            // 2. 일별 추이 계산 (최근 7일 혹은 데이터 범위)
+            const dailySums = {};
+            lastData.slice(0, 10).reverse().forEach(r => { 
+                const d = new Date(r.date).toLocaleDateString();
+                dailySums[d] = (dailySums[d] || 0) + Number(r.amount);
+            });
+
+            trendChart = new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: Object.keys(dailySums),
+                    datasets: [{
+                        label: '지출액',
+                        data: Object.values(dailySums),
+                        borderColor: '#78350f',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(120, 53, 15, 0.1)'
+                    }]
+                },
+                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+            });
+        }
+
+        function openAddForm() { document.getElementById('modalTitle').innerText = "기록하기"; document.getElementById('editRowIdx').value = ""; document.getElementById('inItem').value = ""; document.getElementById('inAmount').value = ""; document.getElementById('inQty').value = ""; document.getElementById('inDate').valueAsDate = new Date(); toggleQty(); toggleForm(true); }
         function openEditForm(idx) { 
             const r = lastData[idx]; 
             document.getElementById('modalTitle').innerText = "수정하기"; 
@@ -173,16 +215,17 @@
             const btn = document.getElementById('sBtn'), amt = document.getElementById('inAmount').value.replace(/,/g, ""), rowIdx = document.getElementById('editRowIdx').value; 
             if(!amt || !document.getElementById('inItem').value) return alert("내용을 입력하세요!"); 
             btn.innerText = "저장 중..."; 
-            const action = rowIdx ? 'update' : 'add'; 
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ 
-                action: action, rowIdx: rowIdx, category: document.getElementById('inCat').value, 
+                action: rowIdx ? 'update' : 'add', rowIdx: rowIdx, category: document.getElementById('inCat').value, 
                 item: document.getElementById('inItem').value, amount: amt, 
                 date: document.getElementById('inDate').value, qty: document.getElementById('inQty').value 
             })}); 
             location.reload(); 
         }
+
         async function del(idx) { if(!confirm("삭제하시겠습니까?")) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIdx: idx }) }); location.reload(); }
         function toggleForm(s) { document.getElementById('modal').classList.toggle('hidden', !s); }
+        function toggleStats(s) { document.getElementById('statsModal').classList.toggle('hidden', !s); }
         init();
     </script>
 </body>
